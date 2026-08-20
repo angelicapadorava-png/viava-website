@@ -266,7 +266,12 @@ details[open] summary::after{ content:"\2212"; }
 .field input, .field select, .field textarea{ font-family:var(--font-body); font-size:0.92rem; padding:12px 14px; border-radius:var(--r-sm); border:1.5px solid var(--line); background:#FBF9FB; color:var(--ink); }
 .field input:focus, .field select:focus, .field textarea:focus{ outline:none; border-color:var(--berry); }
 .field textarea{ resize:vertical; min-height:70px; font-family:inherit; }
-.contact-grid .btn{ width:100%; text-align:center; border:none; }
+.contact-grid .btn{ width:100%; text-align:center; border:none; cursor:pointer; }
+.form-notice{ grid-column:1/-1; border-radius:var(--r-sm); padding:14px 16px; font-size:0.9rem; font-weight:500; }
+.form-notice.success{ background:rgba(46,158,110,0.12); color:#1E7A4F; border:1.5px solid rgba(46,158,110,0.35); }
+.form-notice.error{ background:rgba(192,45,106,0.08); color:var(--berry); border:1.5px solid rgba(192,45,106,0.3); }
+.field .req{ color:var(--berry); }
+.hp-field{ position:absolute; left:-9999px; top:-9999px; opacity:0; height:0; width:0; overflow:hidden; }
 
 /* final cta */
 .final-cta{ background:var(--grad-brand); color:#fff; text-align:center; padding:110px 0; }
@@ -278,7 +283,7 @@ details[open] summary::after{ content:"\2212"; }
 
 /* footer */
 footer{ background:var(--ink-2); color:#fff; padding:64px 0 30px; border-top:1px solid var(--line-on-ink); }
-.foot-grid{ display:grid; grid-template-columns:1.4fr repeat(4,1fr); gap:32px; margin-bottom:44px; }
+.foot-grid{ display:grid; grid-template-columns:1.4fr repeat(3,1fr); gap:32px; margin-bottom:44px; }
 @media (max-width:900px){ .foot-grid{ grid-template-columns:1fr 1fr; } }
 .foot-word{ font-family:var(--font-display); font-weight:900; font-size:1.6rem; background:var(--grad-brand); -webkit-background-clip:text; background-clip:text; color:transparent; margin-bottom:10px; display:flex; align-items:baseline; gap:5px; }
 .foot-word .script{ font-family:var(--font-script); font-size:1.1rem; -webkit-text-fill-color:var(--peach); color:var(--peach); }
