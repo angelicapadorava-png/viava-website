@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,900;1,9..144,500&family=Playball&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="viava-styles.css">
+<link rel="stylesheet" href="viava-styles.css?v=2">
 </head>
 <body>
 <div class="viava-page">
@@ -50,7 +50,7 @@
       <form class="contact-grid" action="contact-handler.php" method="POST" novalidate>
         <div id="form-notice" class="form-notice" style="display:none;"></div>
         <!-- Honeypot field: hidden from real visitors, catches basic bots -->
-        <div class="hp-field" aria-hidden="true">
+        <div class="hp-field" aria-hidden="true" style="position:absolute; left:-9999px; top:-9999px; opacity:0; height:0; width:0; overflow:hidden;">
           <label for="f-website">Website</label>
           <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off">
         </div>
