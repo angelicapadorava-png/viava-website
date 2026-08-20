@@ -7,7 +7,21 @@
  *
  * Deploy alongside the HTML files on Hostinger (PHP is served automatically
  * on shared hosting plans — no extra setup needed).
+ *
+ * Email delivery: if mail-config.php exists (see mail-config.example.php),
+ * mail is sent via authenticated SMTP through PHPMailer — this is what
+ * keeps mail out of spam, since it's genuinely sent as the real mailbox
+ * rather than through PHP's unauthenticated mail() function. If
+ * mail-config.php doesn't exist yet, this falls back to mail() so the
+ * form still works while SMTP is being set up.
  */
+
+require __DIR__ . '/lib/PHPMailer/Exception.php';
+require __DIR__ . '/lib/PHPMailer/PHPMailer.php';
+require __DIR__ . '/lib/PHPMailer/SMTP.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception as PHPMailerException;
 
 // Where inquiries get sent.
 $to = 'sales@viavateam.com';
@@ -20,6 +34,52 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 function field(string $key): string {
     return trim((string)($_POST[$key] ?? ''));
+}
+
+/**
+ * Sends one email. Uses SMTP (via mail-config.php) when available,
+ * otherwise falls back to PHP's mail(). Returns true on success.
+ */
+function send_mail(string $toAddr, string $toName, string $fromAddr, string $fromName, ?string $replyToAddr, ?string $replyToName, string $subject, string $body): bool {
+    $configPath = __DIR__ . '/mail-config.php';
+
+    if (file_exists($configPath)) {
+        $config = require $configPath;
+        try {
+            $mailer = new PHPMailer(true);
+            $mailer->isSMTP();
+            $mailer->Host       = $config['host'];
+            $mailer->Port       = $config['port'];
+            $mailer->SMTPAuth   = true;
+            $mailer->Username   = $config['username'];
+            $mailer->Password   = $config['password'];
+            $mailer->SMTPSecure = $config['encryption']; // 'ssl' or 'tls'
+            $mailer->CharSet    = 'UTF-8';
+
+            $mailer->setFrom($fromAddr, $fromName);
+            $mailer->addAddress($toAddr, $toName);
+            if ($replyToAddr) {
+                $mailer->addReplyTo($replyToAddr, $replyToName ?? '');
+            }
+            $mailer->Subject = $subject;
+            $mailer->Body    = $body;
+            $mailer->isHTML(false);
+
+            return $mailer->send();
+        } catch (PHPMailerException $e) {
+            return false;
+        }
+    }
+
+    // Fallback: plain mail(), used only until mail-config.php is set up.
+    $headers   = [];
+    $headers[] = 'From: ' . $fromName . ' <' . $fromAddr . '>';
+    if ($replyToAddr) {
+        $headers[] = 'Reply-To: ' . ($replyToName ?: $replyToAddr) . ' <' . $replyToAddr . '>';
+    }
+    $headers[] = 'Content-Type: text/plain; charset=UTF-8';
+
+    return mail($toAddr, $subject, $body, implode("\r\n", $headers));
 }
 
 // Honeypot — real visitors never fill this in; bots usually do.
@@ -62,15 +122,7 @@ $body .= "Type of support requested: {$support}\n";
 $body .= "Preferred start: {$start}\n";
 $body .= "Agreed to be contacted by email: Yes\n";
 
-// Sending "From" a real, existing mailbox on the domain (rather than a
-// made-up noreply@ address) matters for deliverability — a From address
-// that doesn't correspond to an actual account is a common spam trigger.
-$headers   = [];
-$headers[] = 'From: VIA VA Website <sales@viavateam.com>';
-$headers[] = 'Reply-To: ' . $name . ' <' . $email . '>';
-$headers[] = 'Content-Type: text/plain; charset=UTF-8';
-
-$teamSent = mail($to, $subject, $body, implode("\r\n", $headers));
+$teamSent = send_mail($to, 'VIA VA Sales', 'sales@viavateam.com', 'VIA VA Website', $email, $name, $subject, $body);
 
 // --- 2) Confirm receipt with the submitter ---------------------------------
 
@@ -88,15 +140,10 @@ $confirmBody .= "Preferred start: {$start}\n\n";
 $confirmBody .= "If anything above needs correcting, just reply to this email.\n\n";
 $confirmBody .= "Talk soon,\nThe VIA VA Team\n";
 
-$confirmHeaders   = [];
-$confirmHeaders[] = 'From: VIA VA <sales@viavateam.com>';
-$confirmHeaders[] = 'Reply-To: VIA VA <sales@viavateam.com>';
-$confirmHeaders[] = 'Content-Type: text/plain; charset=UTF-8';
-
 // Best-effort: the team notification above is the one that must succeed for
 // the inquiry to count as "received" — a failed confirmation email doesn't
 // block that.
-mail($email, $confirmSubject, $confirmBody, implode("\r\n", $confirmHeaders));
+send_mail($email, $name, 'sales@viavateam.com', 'VIA VA', null, null, $confirmSubject, $confirmBody);
 
 header('Location: viava-contact.html?sent=' . ($teamSent ? '1' : '0'));
 exit;
