@@ -19,6 +19,7 @@
 require __DIR__ . '/lib/PHPMailer/Exception.php';
 require __DIR__ . '/lib/PHPMailer/PHPMailer.php';
 require __DIR__ . '/lib/PHPMailer/SMTP.php';
+require __DIR__ . '/email-templates/contact-confirmation.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as PHPMailerException;
@@ -40,7 +41,7 @@ function field(string $key): string {
  * Sends one email. Uses SMTP (via mail-config.php) when available,
  * otherwise falls back to PHP's mail(). Returns true on success.
  */
-function send_mail(string $toAddr, string $toName, string $fromAddr, string $fromName, ?string $replyToAddr, ?string $replyToName, string $subject, string $body): bool {
+function send_mail(string $toAddr, string $toName, string $fromAddr, string $fromName, ?string $replyToAddr, ?string $replyToName, string $subject, string $body, ?string $htmlBody = null): bool {
     $configPath = __DIR__ . '/mail-config.php';
 
     if (file_exists($configPath)) {
@@ -62,8 +63,15 @@ function send_mail(string $toAddr, string $toName, string $fromAddr, string $fro
                 $mailer->addReplyTo($replyToAddr, $replyToName ?? '');
             }
             $mailer->Subject = $subject;
-            $mailer->Body    = $body;
-            $mailer->isHTML(false);
+
+            if ($htmlBody !== null) {
+                $mailer->isHTML(true);
+                $mailer->Body    = $htmlBody;
+                $mailer->AltBody = $body;
+            } else {
+                $mailer->isHTML(false);
+                $mailer->Body = $body;
+            }
 
             return $mailer->send();
         } catch (PHPMailerException $e) {
@@ -130,20 +138,18 @@ $firstName = explode(' ', $name)[0];
 
 $confirmSubject = "We've got your inquiry — VIA VA";
 
-$confirmBody  = "Hi {$firstName},\n\n";
-$confirmBody .= "Thanks for reaching out to VIA VA! We've received your inquiry and a member of our team will follow up within 48 hours to talk through your needs and find your match.\n\n";
-$confirmBody .= "Here's what you sent us:\n";
-$confirmBody .= "Company: {$company}\n";
-$confirmBody .= "Hours of support needed: {$hours}\n";
-$confirmBody .= "Type of support requested: {$support}\n";
-$confirmBody .= "Preferred start: {$start}\n\n";
-$confirmBody .= "If anything above needs correcting, just reply to this email.\n\n";
-$confirmBody .= "Talk soon,\nThe VIA VA Team\n";
+$rendered = render_contact_confirmation_email([
+    'firstName' => $firstName,
+    'company'   => $company,
+    'hours'     => $hours,
+    'support'   => $support,
+    'start'     => $start,
+]);
 
 // Best-effort: the team notification above is the one that must succeed for
 // the inquiry to count as "received" — a failed confirmation email doesn't
 // block that.
-send_mail($email, $name, 'sales@viavateam.com', 'VIA VA', null, null, $confirmSubject, $confirmBody);
+send_mail($email, $name, 'sales@viavateam.com', 'VIA VA', null, null, $confirmSubject, $rendered['text'], $rendered['html']);
 
 header('Location: viava-contact.html?sent=' . ($teamSent ? '1' : '0'));
 exit;
