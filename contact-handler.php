@@ -62,8 +62,11 @@ $body .= "Type of support requested: {$support}\n";
 $body .= "Preferred start: {$start}\n";
 $body .= "Agreed to be contacted by email: Yes\n";
 
+// Sending "From" a real, existing mailbox on the domain (rather than a
+// made-up noreply@ address) matters for deliverability — a From address
+// that doesn't correspond to an actual account is a common spam trigger.
 $headers   = [];
-$headers[] = 'From: VIA VA Website <noreply@viavateam.com>';
+$headers[] = 'From: VIA VA Website <sales@viavateam.com>';
 $headers[] = 'Reply-To: ' . $name . ' <' . $email . '>';
 $headers[] = 'Content-Type: text/plain; charset=UTF-8';
 
