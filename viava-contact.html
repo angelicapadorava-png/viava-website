@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,900;1,9..144,500&family=Playball&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="viava-styles.css?v=2">
+<link rel="stylesheet" href="viava-styles.css?v=3">
 </head>
 <body>
 <div class="viava-page">
@@ -62,6 +62,12 @@
         <div class="field full"><label for="f-what">What does your business do?</label><input id="f-what" name="what" type="text" placeholder="A quick description"></div>
         <div class="field full"><label for="f-support">What type of support are you looking for?</label><textarea id="f-support" name="support" placeholder="Admin, real estate, sales, social media, bookkeeping..."></textarea></div>
         <div class="field full"><label for="f-start">When would you like to get started?</label><input id="f-start" name="start" type="text" placeholder="e.g. As soon as possible"></div>
+        <div class="field full consent-field">
+          <label class="consent-label" for="f-consent">
+            <input id="f-consent" name="consent" type="checkbox" required>
+            <span>I agree that VIA VA may contact me at the email address provided above. <span class="req">*</span></span>
+          </label>
+        </div>
         <div class="field full"><button type="submit" class="btn btn-primary">Submit Inquiry</button></div>
       </form>
     </div>
@@ -96,7 +102,7 @@
   var notice = document.getElementById('form-notice');
   if (!notice) return;
   if (sent === '1') {
-    notice.textContent = "Thanks — your inquiry is in. We'll be in touch within 48 hours.";
+    notice.textContent = "Thanks — your inquiry is in. Check your inbox for a confirmation, and we'll follow up within 48 hours.";
     notice.className = 'form-notice success';
     document.querySelector('.contact-grid').reset();
   } else {

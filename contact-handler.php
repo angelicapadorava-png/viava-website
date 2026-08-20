@@ -1,8 +1,9 @@
 <?php
 /**
  * VIA VA — contact form handler.
- * Validates the submitted inquiry, emails it to the team inbox, and
- * redirects back to the contact page with a success or error flag.
+ * Validates the submitted inquiry, emails the team, sends the submitter
+ * a confirmation, and redirects back to the contact page with a
+ * success or error flag.
  *
  * Deploy alongside the HTML files on Hostinger (PHP is served automatically
  * on shared hosting plans — no extra setup needed).
@@ -34,9 +35,10 @@ $hours   = field('hours');
 $what    = field('what');
 $support = field('support');
 $start   = field('start');
+$consent = field('consent'); // checkbox sends "on" when checked, absent otherwise
 
-// Required fields.
-if ($name === '' || $email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+// Required fields — including explicit consent to be contacted.
+if ($name === '' || $email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $consent === '') {
     header('Location: viava-contact.html?sent=0');
     exit;
 }
@@ -45,6 +47,8 @@ if ($name === '' || $email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL))
 $clean = static fn (string $v): string => str_replace(["\r", "\n"], ' ', $v);
 $name  = $clean($name);
 $email = $clean($email);
+
+// --- 1) Notify the team ---------------------------------------------------
 
 $subject = 'New VIA VA inquiry from ' . $name;
 
@@ -56,13 +60,40 @@ $body .= "Hours of support needed: {$hours}\n";
 $body .= "What the business does: {$what}\n";
 $body .= "Type of support requested: {$support}\n";
 $body .= "Preferred start: {$start}\n";
+$body .= "Agreed to be contacted by email: Yes\n";
 
 $headers   = [];
 $headers[] = 'From: VIA VA Website <noreply@viavateam.com>';
 $headers[] = 'Reply-To: ' . $name . ' <' . $email . '>';
 $headers[] = 'Content-Type: text/plain; charset=UTF-8';
 
-$sent = mail($to, $subject, $body, implode("\r\n", $headers));
+$teamSent = mail($to, $subject, $body, implode("\r\n", $headers));
 
-header('Location: viava-contact.html?sent=' . ($sent ? '1' : '0'));
+// --- 2) Confirm receipt with the submitter ---------------------------------
+
+$firstName = explode(' ', $name)[0];
+
+$confirmSubject = "We've got your inquiry — VIA VA";
+
+$confirmBody  = "Hi {$firstName},\n\n";
+$confirmBody .= "Thanks for reaching out to VIA VA! We've received your inquiry and a member of our team will follow up within 48 hours to talk through your needs and find your match.\n\n";
+$confirmBody .= "Here's what you sent us:\n";
+$confirmBody .= "Company: {$company}\n";
+$confirmBody .= "Hours of support needed: {$hours}\n";
+$confirmBody .= "Type of support requested: {$support}\n";
+$confirmBody .= "Preferred start: {$start}\n\n";
+$confirmBody .= "If anything above needs correcting, just reply to this email.\n\n";
+$confirmBody .= "Talk soon,\nThe VIA VA Team\n";
+
+$confirmHeaders   = [];
+$confirmHeaders[] = 'From: VIA VA <sales@viavateam.com>';
+$confirmHeaders[] = 'Reply-To: VIA VA <sales@viavateam.com>';
+$confirmHeaders[] = 'Content-Type: text/plain; charset=UTF-8';
+
+// Best-effort: the team notification above is the one that must succeed for
+// the inquiry to count as "received" — a failed confirmation email doesn't
+// block that.
+mail($email, $confirmSubject, $confirmBody, implode("\r\n", $confirmHeaders));
+
+header('Location: viava-contact.html?sent=' . ($teamSent ? '1' : '0'));
 exit;
