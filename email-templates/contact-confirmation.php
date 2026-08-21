@@ -46,23 +46,21 @@ function render_contact_confirmation_email(array $data): array {
 
     if ($heroImageUrl) {
         $heroVisual = <<<HTML
-            <tr>
-              <td align="center" style="padding:0 24px 32px 24px;">
-                <img src="{$heroImageUrl}" width="480" alt="" style="width:100%; max-width:480px; height:auto; display:block; border-radius:16px; border:4px solid rgba(255,255,255,0.35);">
-              </td>
-            </tr>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;">
+              <tr>
+                <td align="center" bgcolor="#ffffff" style="background-color:#ffffff; border-radius:18px; padding:8px; box-shadow:0 16px 32px -12px rgba(20,16,28,0.45);">
+                  <img src="{$heroImageUrl}" width="464" alt="" style="width:100%; max-width:464px; height:auto; display:block; border-radius:12px;">
+                </td>
+              </tr>
+            </table>
 HTML;
     } else {
         $heroVisual = <<<HTML
-            <tr>
-              <td align="center" style="padding:0 24px 28px 24px;">
-                <table role="presentation" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td width="128" height="128" align="center" valign="middle" bgcolor="{$peach}" style="background-color:{$peach}; border-radius:64px; font-size:56px; line-height:128px;">&#128187;</td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px auto 0 auto;">
+              <tr>
+                <td width="128" height="128" align="center" valign="middle" bgcolor="#ffffff" style="background-color:#ffffff; border-radius:64px; font-size:56px; line-height:128px; box-shadow:0 16px 32px -12px rgba(20,16,28,0.45);">&#128187;</td>
+              </tr>
+            </table>
 HTML;
     }
 
@@ -91,28 +89,28 @@ HTML;
 
         <!-- Hero -->
         <tr>
-          <td align="center" bgcolor="{$berry}" style="background-color:{$berry}; background-image:linear-gradient(135deg, {$berry} 0%, {$pink} 45%, {$coral} 78%, {$peach} 100%); padding:36px 24px 8px 24px;">
-            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 20px auto;">
+          <td align="center" bgcolor="{$berry}" style="background-color:{$berry}; background-image:linear-gradient(135deg, {$berry} 0%, {$pink} 45%, {$coral} 78%, {$peach} 100%); padding:32px 24px 32px 24px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 18px auto;">
               <tr>
                 <td bgcolor="#ffffff" style="background-color:rgba(255,255,255,0.18); border-radius:999px; padding:8px 18px;">
                   <span style="font-family:Arial, Helvetica, sans-serif; font-size:11px; font-weight:bold; letter-spacing:0.14em; text-transform:uppercase; color:#ffffff;">&#10022;&nbsp; Inquiry received</span>
                 </td>
               </tr>
             </table>
-            <p style="margin:0 0 12px 0; font-family:Georgia, 'Times New Roman', serif; font-weight:bold; font-size:32px; line-height:1.2; color:#ffffff;">You're on our radar, {$firstName}.</p>
-            <p style="margin:0 0 6px 0; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6; color:#ffffff; opacity:0.95;">
+            <p style="margin:0 0 10px 0; font-family:Georgia, 'Times New Roman', serif; font-weight:bold; font-size:32px; line-height:1.2; color:#ffffff;">You're on our radar, {$firstName}.</p>
+            <p style="margin:0 0 4px 0; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6; color:#ffffff; opacity:0.95;">
               Thanks for reaching out to VIA VA. We've received your inquiry.
             </p>
-            <p style="margin:0 0 28px 0; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6; color:#ffffff;">
+            <p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6; color:#ffffff;">
               <strong>Our team will be in touch within 24 hours</strong> to learn more about what you need and how we can help.
             </p>
+{$heroVisual}
           </td>
         </tr>
-{$heroVisual}
 
         <!-- Recap card -->
         <tr>
-          <td style="padding:32px 40px 8px 40px; font-family:Arial, Helvetica, sans-serif;">
+          <td style="padding:24px 40px 8px 40px; font-family:Arial, Helvetica, sans-serif;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="{$stone}" style="background-color:{$stone}; border-radius:14px;">
               <tr>
                 <td style="padding:22px 24px;">
@@ -131,33 +129,33 @@ HTML;
 
         <!-- What happens next -->
         <tr>
-          <td style="padding:32px 40px 12px 40px; font-family:Arial, Helvetica, sans-serif;">
+          <td style="padding:24px 40px 8px 40px; font-family:Arial, Helvetica, sans-serif;">
             <p style="margin:0 0 18px 0; font-size:11px; font-weight:bold; letter-spacing:0.12em; text-transform:uppercase; color:{$berry};">&#10022;&nbsp; What happens next</p>
 
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
               <tr>
-                <td width="40" valign="top" style="padding:0 0 20px 0;">
+                <td width="40" valign="top" style="padding:0 0 16px 0;">
                   <table role="presentation" cellpadding="0" cellspacing="0"><tr><td width="28" height="28" align="center" valign="middle" bgcolor="{$berry}" style="background-color:{$berry}; border-radius:14px; font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#ffffff; font-weight:bold; line-height:28px;">01</td></tr></table>
                 </td>
-                <td valign="top" style="padding:0 0 20px 0;">
+                <td valign="top" style="padding:0 0 16px 0;">
                   <p style="margin:0 0 3px 0; font-size:15px; font-weight:bold; color:{$ink};">We talk through your needs</p>
                   <p style="margin:0; font-size:14px; line-height:1.6; color:{$inkSoft};">We'll learn more about your business, the work you need help with, and what you'd like to take off your plate.</p>
                 </td>
               </tr>
               <tr>
-                <td width="40" valign="top" style="padding:0 0 20px 0;">
+                <td width="40" valign="top" style="padding:0 0 16px 0;">
                   <table role="presentation" cellpadding="0" cellspacing="0"><tr><td width="28" height="28" align="center" valign="middle" bgcolor="{$berry}" style="background-color:{$berry}; border-radius:14px; font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#ffffff; font-weight:bold; line-height:28px;">02</td></tr></table>
                 </td>
-                <td valign="top" style="padding:0 0 20px 0;">
+                <td valign="top" style="padding:0 0 16px 0;">
                   <p style="margin:0 0 3px 0; font-size:15px; font-weight:bold; color:{$ink};">We find the right fit</p>
                   <p style="margin:0; font-size:14px; line-height:1.6; color:{$inkSoft};">We'll help you identify the kind of VA support that makes sense for your workflow, hours, and goals.</p>
                 </td>
               </tr>
               <tr>
-                <td width="40" valign="top" style="padding:0 0 20px 0;">
+                <td width="40" valign="top" style="padding:0 0 16px 0;">
                   <table role="presentation" cellpadding="0" cellspacing="0"><tr><td width="28" height="28" align="center" valign="middle" bgcolor="{$berry}" style="background-color:{$berry}; border-radius:14px; font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#ffffff; font-weight:bold; line-height:28px;">03</td></tr></table>
                 </td>
-                <td valign="top" style="padding:0 0 20px 0;">
+                <td valign="top" style="padding:0 0 16px 0;">
                   <p style="margin:0 0 3px 0; font-size:15px; font-weight:bold; color:{$ink};">You meet your VA</p>
                   <p style="margin:0; font-size:14px; line-height:1.6; color:{$inkSoft};">Once we've found a strong fit, you'll have the opportunity to meet them and make sure the working relationship feels right.</p>
                 </td>
@@ -177,7 +175,7 @@ HTML;
 
         <!-- Why VIA VA — dark band -->
         <tr>
-          <td bgcolor="{$ink}" style="background-color:{$ink}; padding:36px 40px; font-family:Arial, Helvetica, sans-serif;">
+          <td bgcolor="{$ink}" style="background-color:{$ink}; padding:28px 40px; font-family:Arial, Helvetica, sans-serif;">
             <p style="margin:0 0 6px 0; font-size:11px; font-weight:bold; letter-spacing:0.12em; text-transform:uppercase; color:{$peach};">&#10022;&nbsp; Why VIA VA</p>
             <p style="margin:0 0 14px 0; font-size:14px; line-height:1.6; color:#C3BDCB;">
               Hiring a VA shouldn't mean creating another job for yourself. You shouldn't have to spend weeks sorting through applicants, figuring out who to hire, training someone from scratch, and then hoping it works out.
@@ -221,7 +219,7 @@ HTML;
 
         <!-- Need more than a VA -->
         <tr>
-          <td style="padding:36px 40px 8px 40px; font-family:Arial, Helvetica, sans-serif;">
+          <td style="padding:28px 40px 8px 40px; font-family:Arial, Helvetica, sans-serif;">
             <p style="margin:0 0 6px 0; font-size:11px; font-weight:bold; letter-spacing:0.12em; text-transform:uppercase; color:{$berry};">&#10022;&nbsp; Beyond a VA</p>
             <p style="margin:0 0 18px 0; font-family:Georgia, 'Times New Roman', serif; font-size:20px; font-weight:bold; color:{$ink};">Need more than a VA?</p>
           </td>
@@ -249,7 +247,7 @@ HTML;
 
         <!-- Sign off -->
         <tr>
-          <td style="padding:32px 40px 8px 40px; font-family:Arial, Helvetica, sans-serif;">
+          <td style="padding:24px 40px 8px 40px; font-family:Arial, Helvetica, sans-serif;">
             <p style="margin:0 0 4px 0; font-size:14px; line-height:1.6; color:{$inkSoft};">Have a question? Just reply to this email — it comes straight to the VIA VA team.</p>
             <p style="margin:0 0 20px 0; font-size:14px; line-height:1.6; color:{$inkSoft};">Otherwise, keep an eye on your inbox — we'll be in touch within 24 hours. We're looking forward to learning more about <strong style="color:{$ink};">{$companyForClosing}</strong> and seeing how we can help.</p>
             <p style="margin:0; font-size:14px; line-height:1.6; color:{$ink};">Talk soon,<br><strong>The VIA VA Team</strong></p>
