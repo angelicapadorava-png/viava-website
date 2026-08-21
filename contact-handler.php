@@ -75,6 +75,13 @@ function send_mail(string $toAddr, string $toName, string $fromAddr, string $fro
 
             return $mailer->send();
         } catch (PHPMailerException $e) {
+            // Temporary debug logging while diagnosing delivery issues.
+            // Safe to delete this file and this block once resolved.
+            @file_put_contents(
+                __DIR__ . '/mail-debug.log',
+                '[' . date('c') . "] To: {$toAddr} | " . $mailer->ErrorInfo . "\n",
+                FILE_APPEND
+            );
             return false;
         }
     }

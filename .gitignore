@@ -1,3 +1,6 @@
 # Real SMTP credentials — created directly on the server, never committed.
 # Copy mail-config.example.php to mail-config.php and fill in the password.
 mail-config.php
+
+# Temporary debug log for diagnosing mail delivery issues.
+mail-debug.log
