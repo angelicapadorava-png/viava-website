@@ -38,10 +38,6 @@ function field(string $key): string {
 }
 
 /**
- * Sends one email. Uses SMTP (via mail-config.php) when available,
- * otherwise falls back to PHP's mail(). Returns true on success.
- */
-/**
  * Locates mail-config.php. Checked, in order:
  *   1. One directory above the deployed site (e.g. outside public_html) —
  *      the preferred spot, since git deploy syncs/cleans this folder and
@@ -62,6 +58,11 @@ function find_mail_config_path(): ?string {
     return null;
 }
 
+/**
+ * Sends one email. Uses SMTP (via mail-config.php) when available,
+ * otherwise falls back to PHP's mail(). Returns true on success; on
+ * failure, sets $GLOBALS['last_mail_error'] with the reason.
+ */
 function send_mail(string $toAddr, string $toName, string $fromAddr, string $fromName, ?string $replyToAddr, ?string $replyToName, string $subject, string $body, ?string $htmlBody = null): bool {
     $configPath = find_mail_config_path();
 
@@ -96,8 +97,6 @@ function send_mail(string $toAddr, string $toName, string $fromAddr, string $fro
 
             $sent = $mailer->send();
             if (!$sent) {
-                // Temporary debug capture while diagnosing delivery issues.
-                // Safe to remove once resolved — see $GLOBALS['last_mail_error'].
                 $GLOBALS['last_mail_error'] = $mailer->ErrorInfo;
             }
             return $sent;
@@ -159,6 +158,7 @@ $body .= "Preferred start: {$start}\n";
 $body .= "Agreed to be contacted by email: Yes\n";
 
 $teamSent = send_mail($to, 'VIA VA Sales', 'sales@viavateam.com', 'VIA VA Website', $email, $name, $subject, $body);
+$teamMailError = $teamSent ? null : ($GLOBALS['last_mail_error'] ?? 'unknown');
 
 // --- 2) Confirm receipt with the submitter ---------------------------------
 
@@ -176,22 +176,19 @@ $rendered = render_contact_confirmation_email([
 
 // The team notification above is the one that must succeed for the inquiry
 // to count as "received" — a failed confirmation email doesn't block that,
-// but we still capture whether it worked (see confirmSent below) so
-// delivery problems don't go unnoticed.
-$confirmMailError = null;
+// but it's still logged (server-side only) so delivery problems don't go
+// unnoticed.
 $confirmSent = send_mail($email, $name, 'sales@viavateam.com', 'VIA VA', null, null, $confirmSubject, $rendered['text'], $rendered['html']);
+$confirmMailError = $confirmSent ? null : ($GLOBALS['last_mail_error'] ?? 'unknown');
+
+// Log failures to PHP's own error log — visible via Hostinger's error log
+// viewer, never exposed to visitors or the URL.
+if (!$teamSent) {
+    error_log('VIA VA contact form: team notification failed — ' . $teamMailError);
+}
 if (!$confirmSent) {
-    $confirmMailError = $GLOBALS['last_mail_error'] ?? 'unknown';
+    error_log('VIA VA contact form: confirmation email failed — ' . $confirmMailError);
 }
 
-$redirect = 'viava-contact.html?sent=' . ($teamSent ? '1' : '0');
-// Temporary: surface the real SMTP error(s) for debugging. Remove this
-// once delivery is confirmed working — don't leak errors long-term.
-if (!$teamSent && isset($GLOBALS['last_mail_error'])) {
-    $redirect .= '&err=' . urlencode($GLOBALS['last_mail_error']);
-}
-if (!$confirmSent) {
-    $redirect .= '&confirmSent=0&confirmErr=' . urlencode($confirmMailError);
-}
-header('Location: ' . $redirect);
+header('Location: viava-contact.html?sent=' . ($teamSent ? '1' : '0'));
 exit;

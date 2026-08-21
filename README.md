@@ -48,6 +48,17 @@ mailbox. To fix that:
 `mail-config.php` is listed in `.gitignore` — it must **never** be
 committed, since this repo is public.
 
+If either email fails to send, the reason is logged server-side via
+PHP's `error_log()` (visible in Hostinger's error log viewer) — never
+exposed to visitors or in the URL.
+
 Static HTML/CSS + one PHP script (plus the small PHPMailer library), no
 build step. Deploy by uploading these files to the web host's document
 root.
+
+### Note on deploy timing
+
+After pushing to `main`, Hostinger's auto-deploy and PHP's opcache can
+take **30–60 seconds** to fully catch up — testing the contact form
+immediately after a push can show stale behavior. Wait a minute before
+retesting.
