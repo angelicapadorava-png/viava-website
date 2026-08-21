@@ -73,15 +73,15 @@ function send_mail(string $toAddr, string $toName, string $fromAddr, string $fro
                 $mailer->Body = $body;
             }
 
-            return $mailer->send();
+            $sent = $mailer->send();
+            if (!$sent) {
+                // Temporary debug capture while diagnosing delivery issues.
+                // Safe to remove once resolved — see $GLOBALS['last_mail_error'].
+                $GLOBALS['last_mail_error'] = $mailer->ErrorInfo;
+            }
+            return $sent;
         } catch (PHPMailerException $e) {
-            // Temporary debug logging while diagnosing delivery issues.
-            // Safe to delete this file and this block once resolved.
-            @file_put_contents(
-                __DIR__ . '/mail-debug.log',
-                '[' . date('c') . "] To: {$toAddr} | " . $mailer->ErrorInfo . "\n",
-                FILE_APPEND
-            );
+            $GLOBALS['last_mail_error'] = $mailer->ErrorInfo !== '' ? $mailer->ErrorInfo : $e->getMessage();
             return false;
         }
     }
@@ -158,5 +158,11 @@ $rendered = render_contact_confirmation_email([
 // block that.
 send_mail($email, $name, 'sales@viavateam.com', 'VIA VA', null, null, $confirmSubject, $rendered['text'], $rendered['html']);
 
-header('Location: viava-contact.html?sent=' . ($teamSent ? '1' : '0'));
+$redirect = 'viava-contact.html?sent=' . ($teamSent ? '1' : '0');
+// Temporary: surface the real SMTP error for debugging. Remove this
+// once delivery is confirmed working — don't leak errors long-term.
+if (!$teamSent && isset($GLOBALS['last_mail_error'])) {
+    $redirect .= '&err=' . urlencode($GLOBALS['last_mail_error']);
+}
+header('Location: ' . $redirect);
 exit;
