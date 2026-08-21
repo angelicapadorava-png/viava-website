@@ -174,16 +174,24 @@ $rendered = render_contact_confirmation_email([
     'start'     => $start,
 ]);
 
-// Best-effort: the team notification above is the one that must succeed for
-// the inquiry to count as "received" — a failed confirmation email doesn't
-// block that.
-send_mail($email, $name, 'sales@viavateam.com', 'VIA VA', null, null, $confirmSubject, $rendered['text'], $rendered['html']);
+// The team notification above is the one that must succeed for the inquiry
+// to count as "received" — a failed confirmation email doesn't block that,
+// but we still capture whether it worked (see confirmSent below) so
+// delivery problems don't go unnoticed.
+$confirmMailError = null;
+$confirmSent = send_mail($email, $name, 'sales@viavateam.com', 'VIA VA', null, null, $confirmSubject, $rendered['text'], $rendered['html']);
+if (!$confirmSent) {
+    $confirmMailError = $GLOBALS['last_mail_error'] ?? 'unknown';
+}
 
 $redirect = 'viava-contact.html?sent=' . ($teamSent ? '1' : '0');
-// Temporary: surface the real SMTP error for debugging. Remove this
+// Temporary: surface the real SMTP error(s) for debugging. Remove this
 // once delivery is confirmed working — don't leak errors long-term.
 if (!$teamSent && isset($GLOBALS['last_mail_error'])) {
     $redirect .= '&err=' . urlencode($GLOBALS['last_mail_error']);
+}
+if (!$confirmSent) {
+    $redirect .= '&confirmSent=0&confirmErr=' . urlencode($confirmMailError);
 }
 header('Location: ' . $redirect);
 exit;
