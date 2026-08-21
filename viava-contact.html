@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Contact — VIA VA</title>
-<meta name="description" content="Tell VIA VA what you need and get matched with a vetted virtual assistant within 48 hours.">
+<meta name="description" content="Tell VIA VA what you need and get matched with a vetted virtual assistant within 24 hours.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,900;1,9..144,500&family=Playball&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -35,7 +35,7 @@
   <div class="container">
     <p class="eyebrow">Contact</p>
     <h1>Let's build your support team</h1>
-    <p>Tell us what you're working on, what's slowing you down, and what kind of support you're looking for &mdash; we'll follow up within 48 hours.</p>
+    <p>Tell us what you're working on, what's slowing you down, and what kind of support you're looking for &mdash; we'll follow up within 24 hours.</p>
   </div>
 </header>
 
@@ -44,7 +44,7 @@
     <div class="contact-wrap">
       <div class="section-head" style="margin-bottom:0;">
         <p class="eyebrow">Get in touch</p>
-        <h2>We'll reply within 48 hours</h2>
+        <h2>We'll reply within 24 hours</h2>
         <p>Fill out the form and a member of the VIA VA team will follow up to talk through your needs and find your match.</p>
       </div>
       <form class="contact-grid" action="contact-handler.php" method="POST" novalidate>
@@ -102,7 +102,7 @@
   var notice = document.getElementById('form-notice');
   if (!notice) return;
   if (sent === '1') {
-    notice.textContent = "Thanks — your inquiry is in. Check your inbox for a confirmation, and we'll follow up within 48 hours.";
+    notice.textContent = "Thanks — your inquiry is in. Check your inbox for a confirmation, and we'll follow up within 24 hours.";
     notice.className = 'form-notice success';
     document.querySelector('.contact-grid').reset();
   } else {
