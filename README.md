@@ -33,18 +33,20 @@ which tends to land in spam because it isn't authenticated as your real
 mailbox. To fix that:
 
 1. On the **server** (Hostinger File Manager or FTP/SFTP — not git),
-   copy `mail-config.example.php` to `mail-config.php`, in the same
-   folder as `contact-handler.php`.
+   copy `mail-config.example.php` to `mail-config.php`, and place it
+   **one directory above** this site's folder (i.e. above `public_html`,
+   as a sibling of it — not inside it). This matters: Hostinger's git
+   deploy does a clean sync of the site folder on every push, which
+   silently deletes any file placed inside it that isn't part of the
+   repo. Putting it one level up keeps it outside that sync entirely.
 2. Fill in the real password for the `sales@viavateam.com` mailbox.
-3. That's it — `contact-handler.php` automatically detects
-   `mail-config.php` and switches to authenticated SMTP (via the
-   bundled PHPMailer library in `lib/PHPMailer/`) instead of `mail()`.
+3. That's it — `contact-handler.php` automatically checks that
+   location first (falling back to right next to itself if not found
+   there) and switches to authenticated SMTP (via the bundled
+   PHPMailer library in `lib/PHPMailer/`) instead of `mail()`.
 
 `mail-config.php` is listed in `.gitignore` — it must **never** be
-committed, since this repo is public. If your Hostinger deploy pulls a
-clean copy of the repo on every push, double-check `mail-config.php`
-survives each deploy; if it gets wiped, just re-create it (or ask
-Hostinger support how to exclude a path from their git deployment sync).
+committed, since this repo is public.
 
 Static HTML/CSS + one PHP script (plus the small PHPMailer library), no
 build step. Deploy by uploading these files to the web host's document

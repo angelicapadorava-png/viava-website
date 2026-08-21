@@ -41,10 +41,31 @@ function field(string $key): string {
  * Sends one email. Uses SMTP (via mail-config.php) when available,
  * otherwise falls back to PHP's mail(). Returns true on success.
  */
-function send_mail(string $toAddr, string $toName, string $fromAddr, string $fromName, ?string $replyToAddr, ?string $replyToName, string $subject, string $body, ?string $htmlBody = null): bool {
-    $configPath = __DIR__ . '/mail-config.php';
+/**
+ * Locates mail-config.php. Checked, in order:
+ *   1. One directory above the deployed site (e.g. outside public_html) —
+ *      the preferred spot, since git deploy syncs/cleans this folder and
+ *      would otherwise delete the file on every push.
+ *   2. Right next to this script — works, but gets wiped on deploy unless
+ *      Hostinger's git integration is configured to leave it alone.
+ */
+function find_mail_config_path(): ?string {
+    $candidates = [
+        dirname(__DIR__) . '/mail-config.php',
+        __DIR__ . '/mail-config.php',
+    ];
+    foreach ($candidates as $path) {
+        if (file_exists($path)) {
+            return $path;
+        }
+    }
+    return null;
+}
 
-    if (file_exists($configPath)) {
+function send_mail(string $toAddr, string $toName, string $fromAddr, string $fromName, ?string $replyToAddr, ?string $replyToName, string $subject, string $body, ?string $htmlBody = null): bool {
+    $configPath = find_mail_config_path();
+
+    if ($configPath !== null) {
         $config = require $configPath;
         try {
             $mailer = new PHPMailer(true);
