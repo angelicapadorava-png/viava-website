@@ -123,17 +123,17 @@ if (field('website') !== '') {
     exit;
 }
 
-$name    = field('name');
-$email   = field('email');
-$company = field('company');
-$hours   = field('hours');
-$what    = field('what');
-$support = field('support');
-$start   = field('start');
-$consent = field('consent'); // checkbox sends "on" when checked, absent otherwise
+$name        = field('name');
+$email       = field('email');
+$supportType = field('supportType');
+$details     = field('details');
+$hours       = field('hours');
+$start       = field('start');
+$consent     = field('consent'); // checkbox sends "on" when checked, absent otherwise
 
 // Required fields — including explicit consent to be contacted.
-if ($name === '' || $email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $consent === '') {
+if ($name === '' || $email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $consent === ''
+    || $supportType === '' || $hours === '' || $start === '') {
     header('Location: viava-contact.html?sent=0');
     exit;
 }
@@ -150,11 +150,10 @@ $subject = 'New VIA VA inquiry from ' . $name;
 $body  = "New contact form submission from viavateam.com\n\n";
 $body .= "Name: {$name}\n";
 $body .= "Email: {$email}\n";
-$body .= "Company: {$company}\n";
+$body .= "Type of support: {$supportType}\n";
+$body .= "What they need help with: {$details}\n";
 $body .= "Hours of support needed: {$hours}\n";
-$body .= "What the business does: {$what}\n";
-$body .= "Type of support requested: {$support}\n";
-$body .= "Preferred start: {$start}\n";
+$body .= "When they need support: {$start}\n";
 $body .= "Agreed to be contacted by email: Yes\n";
 
 $teamSent = send_mail($to, 'VIA VA Sales', 'sales@viavateam.com', 'VIA VA Website', $email, $name, $subject, $body);
@@ -167,11 +166,11 @@ $firstName = explode(' ', $name)[0];
 $confirmSubject = "We've got your inquiry — VIA VA";
 
 $rendered = render_contact_confirmation_email([
-    'firstName' => $firstName,
-    'company'   => $company,
-    'hours'     => $hours,
-    'support'   => $support,
-    'start'     => $start,
+    'firstName'   => $firstName,
+    'supportType' => $supportType,
+    'details'     => $details,
+    'hours'       => $hours,
+    'start'       => $start,
 ]);
 
 // The team notification above is the one that must succeed for the inquiry

@@ -13,12 +13,11 @@
 function render_contact_confirmation_email(array $data): array {
     $esc = static fn (string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
 
-    $firstName = $esc($data['firstName']);
-    $company   = $esc($data['company'] !== '' ? $data['company'] : '—');
-    $hours     = $esc($data['hours'] !== '' ? $data['hours'] : '—');
-    $support   = $esc($data['support'] !== '' ? $data['support'] : '—');
-    $start     = $esc($data['start'] !== '' ? $data['start'] : '—');
-    $companyForClosing = $esc($data['company'] !== '' ? $data['company'] : 'your business');
+    $firstName   = $esc($data['firstName']);
+    $supportType = $esc($data['supportType'] !== '' ? $data['supportType'] : '—');
+    $details     = $esc($data['details'] !== '' ? $data['details'] : '—');
+    $hours       = $esc($data['hours'] !== '' ? $data['hours'] : '—');
+    $start       = $esc($data['start'] !== '' ? $data['start'] : '—');
 
     // Brand palette (matches viava-styles.css)
     $ink     = '#14101C';
@@ -116,11 +115,13 @@ HTML;
                 <td style="padding:22px 24px;">
                   <p style="margin:0 0 12px 0; font-size:11px; font-weight:bold; letter-spacing:0.12em; text-transform:uppercase; color:{$berry};">&#10022;&nbsp; What you told us</p>
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px; color:{$ink};">
-                    <tr><td style="padding:5px 0; color:{$inkSoft};">Company</td><td style="padding:5px 0; text-align:right; font-weight:bold;">{$company}</td></tr>
+                    <tr><td style="padding:5px 0; color:{$inkSoft};">Type of support</td><td style="padding:5px 0; text-align:right; font-weight:bold;">{$supportType}</td></tr>
                     <tr><td style="padding:5px 0; color:{$inkSoft};">Hours of support needed</td><td style="padding:5px 0; text-align:right; font-weight:bold;">{$hours}</td></tr>
-                    <tr><td style="padding:5px 0; color:{$inkSoft};">Type of support</td><td style="padding:5px 0; text-align:right; font-weight:bold;">{$support}</td></tr>
-                    <tr><td style="padding:5px 0; color:{$inkSoft};">Preferred start</td><td style="padding:5px 0; text-align:right; font-weight:bold;">{$start}</td></tr>
+                    <tr><td style="padding:5px 0; color:{$inkSoft};">When support is needed</td><td style="padding:5px 0; text-align:right; font-weight:bold;">{$start}</td></tr>
                   </table>
+                  <p style="margin:12px 0 0 0; padding-top:12px; border-top:1px solid rgba(20,16,28,0.08); font-size:13px; color:{$inkSoft};">
+                    <strong style="color:{$ink};">What you need help with:</strong> {$details}
+                  </p>
                 </td>
               </tr>
             </table>
@@ -249,7 +250,7 @@ HTML;
         <tr>
           <td style="padding:24px 40px 8px 40px; font-family:Arial, Helvetica, sans-serif;">
             <p style="margin:0 0 4px 0; font-size:14px; line-height:1.6; color:{$inkSoft};">Have a question? Just reply to this email — it comes straight to the VIA VA team.</p>
-            <p style="margin:0 0 20px 0; font-size:14px; line-height:1.6; color:{$inkSoft};">Otherwise, keep an eye on your inbox — we'll be in touch within 24 hours. We're looking forward to learning more about <strong style="color:{$ink};">{$companyForClosing}</strong> and seeing how we can help.</p>
+            <p style="margin:0 0 20px 0; font-size:14px; line-height:1.6; color:{$inkSoft};">Otherwise, keep an eye on your inbox — we'll be in touch within 24 hours. We're looking forward to learning more about what you need and seeing how we can help.</p>
             <p style="margin:0; font-size:14px; line-height:1.6; color:{$ink};">Talk soon,<br><strong>The VIA VA Team</strong></p>
           </td>
         </tr>
@@ -274,10 +275,10 @@ HTML;
     $text .= "Thanks for reaching out to VIA VA. We've received your inquiry.\n";
     $text .= "Our team will be in touch within 24 hours to learn more about what you need and how we can help.\n\n";
     $text .= "WHAT YOU TOLD US\n";
-    $text .= "Company: {$data['company']}\n";
+    $text .= "Type of support: {$data['supportType']}\n";
     $text .= "Hours of support needed: {$data['hours']}\n";
-    $text .= "Type of support: {$data['support']}\n";
-    $text .= "Preferred start: {$data['start']}\n\n";
+    $text .= "When support is needed: {$data['start']}\n";
+    $text .= "What you need help with: {$data['details']}\n\n";
     $text .= "WHAT HAPPENS NEXT\n";
     $text .= "01 - We talk through your needs. We'll learn more about your business, the work you need help with, and what you'd like to take off your plate.\n";
     $text .= "02 - We find the right fit. We'll help you identify the kind of VA support that makes sense for your workflow, hours, and goals.\n";
@@ -295,8 +296,7 @@ HTML;
     $text .= "- Website services: need a website built, updated, or maintained? We work with our trusted web development partner, Devectureph.\n";
     $text .= "- Branding: working on your brand? Let us know, our team can point you in the right direction.\n\n";
     $text .= "Have a question? Just reply to this email — it comes straight to the VIA VA team.\n";
-    $companyForClosingText = $data['company'] !== '' ? $data['company'] : 'your business';
-    $text .= "Otherwise, keep an eye on your inbox — we'll be in touch within 24 hours. We're looking forward to learning more about {$companyForClosingText} and seeing how we can help.\n\n";
+    $text .= "Otherwise, keep an eye on your inbox — we'll be in touch within 24 hours. We're looking forward to learning more about what you need and seeing how we can help.\n\n";
     $text .= "Talk soon,\nThe VIA VA Team\n\n";
     $text .= "VIA VA — Virtual support that gives you time back.\n";
 

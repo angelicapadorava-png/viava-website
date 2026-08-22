@@ -22,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,900;1,9..144,500&family=Playball&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="viava-styles.css?v=3">
+<link rel="stylesheet" href="viava-styles.css?v=4">
 </head>
 <body>
 <div class="viava-page">
@@ -57,11 +57,11 @@
   <div class="container">
     <div class="contact-wrap">
       <div class="section-head" style="margin-bottom:0;">
-        <p class="eyebrow">Get in touch</p>
-        <h2>We'll reply within 24 hours</h2>
-        <p>Fill out the form and a member of the VIA VA team will follow up to talk through your needs and find your match.</p>
+        <p class="eyebrow">Get Matched</p>
+        <h2>Let's find your VA match</h2>
+        <p>Answer a few quick questions and a member of the VIA VA team will follow up within 24 hours.</p>
       </div>
-      <form class="contact-grid" action="contact-handler.php" method="POST" novalidate>
+      <form class="quiz-form" action="contact-handler.php" method="POST" novalidate>
         <div id="form-notice" class="form-notice" style="display:none;"></div>
         <!-- Honeypot field: hidden from real visitors, catches basic bots -->
         <div class="hp-field" aria-hidden="true" style="position:absolute; left:-9999px; top:-9999px; opacity:0; height:0; width:0; overflow:hidden;">
@@ -69,20 +69,59 @@
           <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off">
         </div>
 
-        <div class="field"><label for="f-name">Name <span class="req">*</span></label><input id="f-name" name="name" type="text" placeholder="Your name" required></div>
-        <div class="field"><label for="f-email">Business email <span class="req">*</span></label><input id="f-email" name="email" type="email" placeholder="you@company.com" required></div>
-        <div class="field"><label for="f-company">Company</label><input id="f-company" name="company" type="text" placeholder="Company name"></div>
-        <div class="field"><label for="f-hours">Hours of support needed</label><input id="f-hours" name="hours" type="text" placeholder="e.g. 20 hrs/week"></div>
-        <div class="field full"><label for="f-what">What does your business do?</label><input id="f-what" name="what" type="text" placeholder="A quick description"></div>
-        <div class="field full"><label for="f-support">What type of support are you looking for?</label><textarea id="f-support" name="support" placeholder="Admin, real estate, sales, social media, bookkeeping..."></textarea></div>
-        <div class="field full"><label for="f-start">When would you like to get started?</label><input id="f-start" name="start" type="text" placeholder="e.g. As soon as possible"></div>
-        <div class="field full consent-field">
+        <div class="q-block">
+          <p class="q-label"><span class="q-num">1</span> What kind of VA support are you looking for?</p>
+          <div class="pill-options" role="radiogroup" aria-label="Type of VA support">
+            <label class="pill-option"><input type="radio" name="supportType" value="Administrative / Executive" required><span>Administrative / Executive</span></label>
+            <label class="pill-option"><input type="radio" name="supportType" value="Real Estate"><span>Real Estate</span></label>
+            <label class="pill-option"><input type="radio" name="supportType" value="Lead Generation"><span>Lead Generation</span></label>
+            <label class="pill-option"><input type="radio" name="supportType" value="Customer Service"><span>Customer Service</span></label>
+            <label class="pill-option"><input type="radio" name="supportType" value="Marketing / Social Media"><span>Marketing / Social Media</span></label>
+            <label class="pill-option"><input type="radio" name="supportType" value="Other"><span>Other</span></label>
+          </div>
+        </div>
+
+        <div class="q-block">
+          <p class="q-label"><span class="q-num">2</span> What do you need help with?</p>
+          <p class="q-hint">Briefly tell us what you'd like to delegate.</p>
+          <textarea name="details" placeholder="e.g. Inbox management, lead follow-up, listing coordination, social content..."></textarea>
+        </div>
+
+        <div class="q-block">
+          <p class="q-label"><span class="q-num">3</span> How many hours of support do you need?</p>
+          <div class="pill-options" role="radiogroup" aria-label="Hours of support needed">
+            <label class="pill-option"><input type="radio" name="hours" value="Under 20 hrs/week" required><span>Under 20 hrs/week</span></label>
+            <label class="pill-option"><input type="radio" name="hours" value="20&ndash;30 hrs/week"><span>20&ndash;30 hrs/week</span></label>
+            <label class="pill-option"><input type="radio" name="hours" value="40 hrs/week"><span>40 hrs/week</span></label>
+            <label class="pill-option"><input type="radio" name="hours" value="Not sure"><span>Not sure</span></label>
+          </div>
+        </div>
+
+        <div class="q-block">
+          <p class="q-label"><span class="q-num">4</span> When do you need support?</p>
+          <div class="pill-options" role="radiogroup" aria-label="When support is needed">
+            <label class="pill-option"><input type="radio" name="start" value="ASAP" required><span>ASAP</span></label>
+            <label class="pill-option"><input type="radio" name="start" value="Within 2 weeks"><span>Within 2 weeks</span></label>
+            <label class="pill-option"><input type="radio" name="start" value="Within a month"><span>Within a month</span></label>
+            <label class="pill-option"><input type="radio" name="start" value="Just exploring"><span>Just exploring</span></label>
+          </div>
+        </div>
+
+        <div class="q-block">
+          <p class="q-label"><span class="q-num">5</span> Where can we reach you?</p>
+          <div class="field-row">
+            <div class="field"><label for="f-name">Name</label><input id="f-name" name="name" type="text" placeholder="Your name" required></div>
+            <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" placeholder="you@company.com" required></div>
+          </div>
+        </div>
+
+        <div class="consent-field">
           <label class="consent-label" for="f-consent">
             <input id="f-consent" name="consent" type="checkbox" required>
             <span>I agree that VIA VA may contact me at the email address provided above. <span class="req">*</span></span>
           </label>
         </div>
-        <div class="field full"><button type="submit" class="btn btn-primary">Submit Inquiry</button></div>
+        <button type="submit" class="btn btn-primary btn-block">Get My VA Match &rarr;</button>
       </form>
     </div>
   </div>
@@ -118,7 +157,7 @@
   if (sent === '1') {
     notice.textContent = "Thanks — your inquiry is in. Check your inbox for a confirmation, and we'll follow up within 24 hours.";
     notice.className = 'form-notice success';
-    document.querySelector('.contact-grid').reset();
+    document.querySelector('.quiz-form').reset();
   } else {
     notice.textContent = "Something went wrong sending that — please try again, or email us directly at sales@viavateam.com.";
     notice.className = 'form-notice error';
