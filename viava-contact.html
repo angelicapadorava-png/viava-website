@@ -22,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,900;1,9..144,500&family=Playball&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="viava-styles.css?v=4">
+<link rel="stylesheet" href="viava-styles.css?v=5">
 </head>
 <body>
 <div class="viava-page">
@@ -71,14 +71,16 @@
 
         <div class="q-block">
           <p class="q-label"><span class="q-num">1</span> What kind of VA support are you looking for?</p>
-          <div class="pill-options" role="radiogroup" aria-label="Type of VA support">
-            <label class="pill-option"><input type="radio" name="supportType" value="Administrative / Executive" required><span>Administrative / Executive</span></label>
-            <label class="pill-option"><input type="radio" name="supportType" value="Real Estate"><span>Real Estate</span></label>
-            <label class="pill-option"><input type="radio" name="supportType" value="Lead Generation"><span>Lead Generation</span></label>
-            <label class="pill-option"><input type="radio" name="supportType" value="Customer Service"><span>Customer Service</span></label>
-            <label class="pill-option"><input type="radio" name="supportType" value="Marketing / Social Media"><span>Marketing / Social Media</span></label>
-            <label class="pill-option"><input type="radio" name="supportType" value="Other"><span>Other</span></label>
+          <p class="q-hint">Choose all that apply.</p>
+          <div class="pill-options" role="group" aria-label="Type of VA support">
+            <label class="pill-option"><input type="checkbox" name="supportType[]" value="GVA / Executive Assistant"><span>GVA / Executive Assistant</span></label>
+            <label class="pill-option"><input type="checkbox" name="supportType[]" value="Transaction Coordinator"><span>Transaction Coordinator</span></label>
+            <label class="pill-option"><input type="checkbox" name="supportType[]" value="Lead Generation"><span>Lead Generation</span></label>
+            <label class="pill-option"><input type="checkbox" name="supportType[]" value="Customer Service"><span>Customer Service</span></label>
+            <label class="pill-option"><input type="checkbox" name="supportType[]" value="Marketing / Social Media"><span>Marketing / Social Media</span></label>
+            <label class="pill-option"><input type="checkbox" name="supportType[]" value="Other" id="q1-other-toggle"><span>Other</span></label>
           </div>
+          <input type="text" name="supportTypeOther" id="q1-other-input" class="other-input" placeholder="Tell us what kind of support you need">
         </div>
 
         <div class="q-block">
@@ -163,6 +165,42 @@
     notice.className = 'form-notice error';
   }
   notice.style.display = 'block';
+})();
+
+// Show the "Other" text field only when that checkbox is picked, and
+// require it in that case.
+(function () {
+  var toggle = document.getElementById('q1-other-toggle');
+  var otherInput = document.getElementById('q1-other-input');
+  if (!toggle || !otherInput) return;
+  function sync() {
+    var show = toggle.checked;
+    otherInput.style.display = show ? 'block' : 'none';
+    otherInput.required = show;
+    if (!show) otherInput.value = '';
+  }
+  toggle.addEventListener('change', sync);
+  sync();
+})();
+
+// Q1 is multi-select (checkboxes have no native "at least one required"
+// group behavior) — enforce it manually on submit.
+(function () {
+  var form = document.querySelector('.quiz-form');
+  var notice = document.getElementById('form-notice');
+  if (!form) return;
+  form.addEventListener('submit', function (e) {
+    var checked = form.querySelectorAll('input[name="supportType[]"]:checked');
+    if (checked.length === 0) {
+      e.preventDefault();
+      if (notice) {
+        notice.textContent = 'Please choose at least one type of support in question 1.';
+        notice.className = 'form-notice error';
+        notice.style.display = 'block';
+        notice.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  });
 })();
 </script>
 

@@ -38,6 +38,19 @@ function field(string $key): string {
 }
 
 /**
+ * Reads a checkbox group (posted as an array, e.g. name="foo[]") and
+ * returns the non-empty, trimmed values.
+ */
+function fieldArray(string $key): array {
+    $values = $_POST[$key] ?? [];
+    if (!is_array($values)) {
+        return [];
+    }
+    $values = array_map(static fn ($v) => trim((string) $v), $values);
+    return array_values(array_filter($values, static fn ($v) => $v !== ''));
+}
+
+/**
  * Locates mail-config.php. Checked, in order:
  *   1. One directory above the deployed site (e.g. outside public_html) —
  *      the preferred spot, since git deploy syncs/cleans this folder and
@@ -123,17 +136,25 @@ if (field('website') !== '') {
     exit;
 }
 
-$name        = field('name');
-$email       = field('email');
-$supportType = field('supportType');
-$details     = field('details');
-$hours       = field('hours');
-$start       = field('start');
-$consent     = field('consent'); // checkbox sends "on" when checked, absent otherwise
+$name             = field('name');
+$email            = field('email');
+$supportTypes     = fieldArray('supportType'); // checkbox group, multi-select
+$supportTypeOther = field('supportTypeOther');
+$details          = field('details');
+$hours            = field('hours');
+$start            = field('start');
+$consent          = field('consent'); // checkbox sends "on" when checked, absent otherwise
+
+// "Other" carries its free-text detail instead of the literal word "Other".
+$supportTypes = array_map(
+    static fn ($v) => ($v === 'Other' && $supportTypeOther !== '') ? $supportTypeOther : $v,
+    $supportTypes
+);
+$supportType = implode(', ', $supportTypes);
 
 // Required fields — including explicit consent to be contacted.
 if ($name === '' || $email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $consent === ''
-    || $supportType === '' || $hours === '' || $start === '') {
+    || $supportTypes === [] || $hours === '' || $start === '') {
     header('Location: viava-contact.html?sent=0');
     exit;
 }
