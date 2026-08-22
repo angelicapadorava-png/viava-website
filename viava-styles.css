@@ -232,6 +232,22 @@ section{ padding:96px 0; }
 .price-card .btn{ margin-top:auto; text-align:center; }
 .price-foot-note{ text-align:center; margin-top:32px; font-size:0.88rem; color:var(--ink-soft); }
 
+.pricing-table-wrap{ max-width:760px; margin:0 auto 36px; overflow-x:auto; border-radius:var(--r-lg); box-shadow:var(--shadow-soft); }
+.pricing-table{ width:100%; border-collapse:collapse; background:#fff; min-width:520px; }
+.pricing-table th, .pricing-table td{ padding:14px 18px; text-align:center; font-size:0.92rem; color:var(--ink-soft); }
+.pricing-table thead th{ font-family:var(--font-display); font-size:1.05rem; font-weight:800; color:var(--ink); background:#fff; border-bottom:2px solid var(--line); padding-top:22px; }
+.pricing-table th.pt-label{ background:#fff; }
+.pricing-table th.pt-featured, .pricing-table td.pt-featured{ background:rgba(192,45,106,0.045); }
+.pricing-table tbody th.pt-label, .pricing-table tbody td.pt-label{ text-align:left; font-weight:600; color:var(--ink-soft); font-size:0.86rem; }
+.pricing-table tbody tr:nth-child(even) td:not(.pt-featured){ background:#FBF9FB; }
+.pricing-table td.pt-check{ color:var(--berry); font-weight:700; font-size:1.05rem; }
+.pricing-table .pt-price-row td{ font-family:var(--font-display); font-weight:900; font-size:1.15rem; color:var(--ink); padding-top:18px; padding-bottom:22px; }
+.pricing-table .pt-price-row td span{ display:block; font-family:var(--font-body); font-weight:500; font-size:0.72rem; color:var(--ink-soft); }
+.pricing-table .pt-price-row td.pt-label{ font-family:var(--font-body); font-weight:600; font-size:0.86rem; color:var(--ink-soft); }
+.pricing-table-cta{ text-align:center; margin:0 0 48px; }
+.pricing-table-cta .ptc-question{ display:block; font-family:var(--font-display); font-weight:800; font-size:1.15rem; color:var(--ink); margin-bottom:4px; }
+.pricing-table-cta .ptc-sub{ display:block; color:var(--ink-soft); font-size:0.95rem; margin-bottom:18px; }
+
 /* about */
 .about-copy{ max-width:680px; }
 .about-copy p{ color:var(--mist); font-size:1.02rem; line-height:1.7; margin-bottom:18px; }
