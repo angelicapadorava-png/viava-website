@@ -4,3 +4,6 @@ mail-config.php
 
 # Temporary debug log for diagnosing mail delivery issues.
 mail-debug.log
+
+# Local dev-preview helpers (Browser pane launch config)
+.claude/
