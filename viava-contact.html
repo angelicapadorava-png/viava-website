@@ -3,204 +3,316 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contact — VIA VA</title>
-<meta name="description" content="Tell VIA VA what you need and get matched with a vetted virtual assistant within 24 hours.">
+<title>Let's Talk — VIA VA Team</title>
+<meta name="description" content="Tell us a little about your business and where you could use support. We'll help you figure out what kind of VIA VA would be the right fit.">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Contact — VIA VA">
-<meta property="og:description" content="Tell VIA VA what you need and get matched with a vetted virtual assistant within 24 hours.">
+<meta property="og:title" content="Let's Talk — VIA VA Team">
+<meta property="og:description" content="Tell us about your business and we'll help you figure out the right VA fit.">
 <meta property="og:image" content="https://viavateam.com/assets/og-image.png">
 <meta property="og:url" content="https://viavateam.com/viava-contact.html">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Contact — VIA VA">
-<meta name="twitter:description" content="Tell VIA VA what you need and get matched with a vetted virtual assistant within 24 hours.">
-<meta name="twitter:image" content="https://viavateam.com/assets/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,900;1,9..144,500&family=Playball&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="viava-styles.css?v=6">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500;1,9..144,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="viava-redesign.css?v=2">
 </head>
 <body>
-<div class="viava-page">
 
 <nav class="nav">
   <div class="nav-inner">
-    <a class="wordmark" href="index.html">VIAVA<span class="script">team</span></a>
-    <input type="checkbox" id="nav-toggle" class="nav-toggle-input">
-    <label for="nav-toggle" class="nav-toggle-btn" aria-label="Toggle menu"><span></span><span></span><span></span></label>
-    <ul class="nav-links">
+    <a class="brand" href="index.html">
+      <span class="brand-main">VIA&nbsp;<span class="accent">VA</span><sup>&#10022;</sup></span>
+      <span class="brand-sub">TEAM</span>
+    </a>
+    <input type="checkbox" id="navtog" class="navtog">
+    <label for="navtog" class="burger" aria-label="Toggle menu"><span></span><span></span><span></span></label>
+    <ul class="nav-menu">
       <li><a href="index.html">Home</a></li>
-      <li><a href="viava-how-it-works.html">How It Works</a></li>
-      <li><a href="viava-services-pricing.html">Services &amp; Pricing</a></li>
-      <li><a href="viava-about.html">About</a></li>
-      <li><a class="active" href="viava-contact.html">Contact</a></li>
+      <li><a href="viava-about.html">About Us</a></li>
+      <li><a href="viava-services.html">Our Services</a></li>
+      <li><a href="viava-our-vas.html">Our VAs</a></li>
+      <li><a href="viava-resources.html">Resources</a></li>
+      <li class="has-drop">
+        <a class="nav-drop-toggle" href="viava-for-clients.html">For Clients <span class="caret"></span></a>
+        <ul class="nav-drop">
+          <li><a href="viava-how-it-works.html">How It Works</a></li>
+          <li><a href="viava-pricing.html">Pricing</a></li>
+          <li><a href="viava-contact.html">Book a Call</a></li>
+          <li><a href="viava-resources.html">Client Portal</a></li>
+        </ul>
+      </li>
     </ul>
-    <a class="nav-cta" href="viava-contact.html">Get Matched</a>
+    <a class="nav-cta" href="#inquiry">Let's Talk <svg class="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
   </div>
 </nav>
 
-<header class="page-hero" id="top">
-  <div class="blob blob-1"></div>
-  <div class="blob blob-2"></div>
-  <div class="container">
-    <p class="eyebrow">Contact</p>
-    <h1>Let's build your support team</h1>
-    <p>Tell us what you're working on, what's slowing you down, and what kind of support you're looking for &mdash; we'll follow up within 24 hours.</p>
+<header class="hero page-hero">
+  <div class="container hero-grid">
+    <div class="reveal hero-tick">
+      <p class="klabel klabel--dbl">Let's Talk</p>
+      <h1>Let's talk about <span class="pink">what you need.</span></h1>
+      <p class="hero-lead">Tell us a little about your business and where you could use support. We'll help you figure out what kind of VIA VA would be the right fit.</p>
+      <p class="hero-script">Real people. Real support. Real results.</p>
+    </div>
+    <div class="hero-visual reveal">
+      <img src="assets/about-mug.jpg" width="1300" height="867" alt="A tidy desk with a VIA VA Team mug">
+    </div>
   </div>
 </header>
 
-<section id="contact" style="padding-top:56px;">
+<section class="section" id="inquiry" style="padding-top:24px;">
   <div class="container">
-    <div class="contact-wrap">
-      <div class="section-head" style="margin-bottom:0;">
-        <p class="eyebrow">Get Matched</p>
-        <h2>Let's find your VA match</h2>
-        <p>Answer a few quick questions and a member of the VIA VA team will follow up within 24 hours.</p>
+    <p style="text-align:center;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:28px;">How would you like to connect?</p>
+    <div class="connect-grid reveal">
+
+      <div class="connect-card">
+        <p class="klabel">Ready to talk?</p>
+        <h2>Book a discovery call</h2>
+        <p>Choose a time that works for you and talk through your needs with our team.</p>
+        <ul class="checklist" style="margin:0 0 20px;">
+          <li>15&ndash;30 minute discovery call</li>
+          <li>Discuss your goals and challenges</li>
+          <li>Get personalized recommendations</li>
+        </ul>
+        <a class="btn btn-grad" href="mailto:hello@viavateam.com?subject=Book%20a%20discovery%20call" style="width:100%;justify-content:center;">Book a Call <svg class="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <div class="mini-cal" style="margin-top:20px;">
+          <table>
+            <caption>Select a date and time</caption>
+            <thead><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></thead>
+            <tbody>
+              <tr><td class="dim">27</td><td class="dim">28</td><td class="dim">29</td><td class="dim">30</td><td>1</td><td>2</td><td>3</td></tr>
+              <tr><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td></tr>
+              <tr><td>11</td><td>12</td><td>13</td><td>14</td><td class="on"><span class="d">15</span></td><td>16</td><td>17</td></tr>
+              <tr><td>18</td><td>19</td><td>20</td><td>21</td><td>22</td><td>23</td><td>24</td></tr>
+              <tr><td>25</td><td>26</td><td>27</td><td>28</td><td>29</td><td>30</td><td>31</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:14px;">
+            <a class="slot" href="mailto:hello@viavateam.com?subject=Discovery%20call%20-%2010:00%20AM">10:00 AM</a>
+            <a class="slot" href="mailto:hello@viavateam.com?subject=Discovery%20call%20-%2011:00%20AM">11:00 AM</a>
+            <a class="slot" href="mailto:hello@viavateam.com?subject=Discovery%20call%20-%202:00%20PM">2:00 PM</a>
+            <a class="slot" href="mailto:hello@viavateam.com?subject=Discovery%20call%20-%203:00%20PM">3:00 PM</a>
+            <a class="slot" href="mailto:hello@viavateam.com?subject=Discovery%20call%20-%204:00%20PM">4:00 PM</a>
+          </div>
+        </div>
       </div>
-      <form class="quiz-form" action="contact-handler.php" method="POST" novalidate>
-        <div id="form-notice" class="form-notice" style="display:none;"></div>
-        <!-- Honeypot field: hidden from real visitors, catches basic bots -->
-        <div class="hp-field" aria-hidden="true" style="position:absolute; left:-9999px; top:-9999px; opacity:0; height:0; width:0; overflow:hidden;">
-          <label for="f-website">Website</label>
-          <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off">
-        </div>
 
-        <div class="q-block">
-          <p class="q-label"><span class="q-num">1</span> What kind of VA support are you looking for?</p>
-          <p class="q-hint">Choose all that apply.</p>
-          <div class="pill-options" role="group" aria-label="Type of VA support">
-            <label class="pill-option"><input type="checkbox" name="supportType[]" value="GVA / Executive Assistant"><span>GVA / Executive Assistant</span></label>
-            <label class="pill-option"><input type="checkbox" name="supportType[]" value="Transaction Coordinator"><span>Transaction Coordinator</span></label>
-            <label class="pill-option"><input type="checkbox" name="supportType[]" value="Lead Generation"><span>Lead Generation</span></label>
-            <label class="pill-option"><input type="checkbox" name="supportType[]" value="Customer Service"><span>Customer Service</span></label>
-            <label class="pill-option"><input type="checkbox" name="supportType[]" value="Marketing / Social Media"><span>Marketing / Social Media</span></label>
-            <label class="pill-option"><input type="checkbox" name="supportType[]" value="Other" id="q1-other-toggle"><span>Other</span></label>
+      <div class="connect-card">
+        <p class="klabel">Not ready for a call?</p>
+        <h2>Tell us what you're looking for</h2>
+        <p>Fill out a short form and we'll get back to you within 1 business day.</p>
+        <div id="form-notice" class="form-notice" style="display:none;border-radius:var(--r-sm);padding:14px 16px;font-size:0.85rem;margin-bottom:16px;"></div>
+        <form action="contact-handler.php" method="POST" novalidate id="viava-form">
+          <div class="hp-field" aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;overflow:hidden;">
+            <label for="f-website">Website</label>
+            <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off">
           </div>
-          <input type="text" name="supportTypeOther" id="q1-other-input" class="other-input" placeholder="Tell us what kind of support you need">
-        </div>
+          <input type="hidden" name="details" id="f-details">
 
-        <div class="q-block">
-          <p class="q-label"><span class="q-num">2</span> What do you need help with?</p>
-          <p class="q-hint">Briefly tell us what you'd like to delegate.</p>
-          <textarea name="details" placeholder="e.g. Inbox management, lead follow-up, listing coordination, social content..."></textarea>
-        </div>
-
-        <div class="q-block">
-          <p class="q-label"><span class="q-num">3</span> How many hours of support do you need?</p>
-          <div class="pill-options" role="radiogroup" aria-label="Hours of support needed">
-            <label class="pill-option"><input type="radio" name="hours" value="Under 20 hrs/week" required><span>Under 20 hrs/week</span></label>
-            <label class="pill-option"><input type="radio" name="hours" value="20&ndash;30 hrs/week"><span>20&ndash;30 hrs/week</span></label>
-            <label class="pill-option"><input type="radio" name="hours" value="40 hrs/week"><span>40 hrs/week</span></label>
-            <label class="pill-option"><input type="radio" name="hours" value="Not sure"><span>Not sure</span></label>
+          <div class="form-row">
+            <div class="field"><label for="f-name">Full Name <span class="req">*</span></label><input id="f-name" name="name" type="text" required></div>
+            <div class="field"><label for="f-email">Email Address <span class="req">*</span></label><input id="f-email" name="email" type="email" required></div>
           </div>
-        </div>
-
-        <div class="q-block">
-          <p class="q-label"><span class="q-num">4</span> When do you need support?</p>
-          <div class="pill-options" role="radiogroup" aria-label="When support is needed">
-            <label class="pill-option"><input type="radio" name="start" value="ASAP" required><span>ASAP</span></label>
-            <label class="pill-option"><input type="radio" name="start" value="Within 2 weeks"><span>Within 2 weeks</span></label>
-            <label class="pill-option"><input type="radio" name="start" value="Within a month"><span>Within a month</span></label>
-            <label class="pill-option"><input type="radio" name="start" value="Just exploring"><span>Just exploring</span></label>
+          <div class="field"><label for="f-biz">Business Name <span class="req">*</span></label><input id="f-biz" name="businessName" type="text" required></div>
+          <div class="form-row">
+            <div class="field"><label for="f-url">Website (if any)</label><input id="f-url" name="companyUrl" type="text"></div>
+            <div class="field"><label for="f-industry">Industry <span class="req">*</span></label>
+              <select id="f-industry" name="industry" required>
+                <option value="">Select an option</option>
+                <option>Real Estate</option><option>E-commerce</option><option>Coaching / Consulting</option>
+                <option>Agency</option><option>Startup / Tech</option><option>Healthcare</option>
+                <option>Finance</option><option>Other</option>
+              </select>
+            </div>
           </div>
-        </div>
-
-        <div class="q-block">
-          <p class="q-label"><span class="q-num">5</span> Where can we reach you?</p>
-          <div class="field-row">
-            <div class="field"><label for="f-name">Name</label><input id="f-name" name="name" type="text" placeholder="Your name" required></div>
-            <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" placeholder="you@company.com" required></div>
+          <div class="field"><label for="f-needs">What do you need help with? <span class="req">*</span></label>
+            <input id="f-needs" name="supportType[]" type="text" placeholder="e.g. Admin support, Marketing, Real Estate, Operations..." required>
           </div>
-        </div>
-
-        <div class="consent-field">
-          <label class="consent-label" for="f-consent">
-            <input id="f-consent" name="consent" type="checkbox" required>
-            <span>I agree that VIA VA may contact me at the email address provided above. <span class="req">*</span></span>
+          <div class="field">
+            <label>How many hours of support do you need? <span class="req">*</span></label>
+            <div class="pillset">
+              <label>20 hrs / week<input type="radio" name="hours" value="20 hrs / week" required></label>
+              <label>30 hrs / week<input type="radio" name="hours" value="30 hrs / week"></label>
+              <label>40 hrs / week<input type="radio" name="hours" value="40 hrs / week"></label>
+              <label>Not sure yet<input type="radio" name="hours" value="Not sure yet"></label>
+            </div>
+          </div>
+          <div class="field"><label for="f-start">When do you want to get started? <span class="req">*</span></label>
+            <select id="f-start" name="start" required>
+              <option value="">Select an option</option>
+              <option>ASAP</option><option>Within 2 weeks</option><option>Within a month</option><option>Just exploring</option>
+            </select>
+          </div>
+          <div class="field"><label for="f-more">Anything else we should know?</label>
+            <textarea id="f-more" name="moreInfo" placeholder="Tell us more about your business, tools you use, or anything that will help us understand your needs better."></textarea>
+          </div>
+          <label class="pillset" style="display:flex;align-items:flex-start;gap:10px;font-size:0.8rem;color:var(--ink-soft);margin-bottom:16px;cursor:pointer;">
+            <input type="checkbox" name="consent" value="on" required style="position:static;opacity:1;width:16px;height:16px;margin-top:2px;accent-color:var(--rose);">
+            <span>I agree that VIA VA may contact me at the email address provided. <span class="req">*</span></span>
           </label>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">Get My VA Match &rarr;</button>
-      </form>
+          <button type="submit" class="btn btn-grad" style="width:100%;justify-content:center;">Send an Inquiry <svg class="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </form>
+      </div>
+
+    </div>
+    <p class="form-note" style="margin-top:16px;">&#128274; Your information is safe with us. We respect your privacy.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <div class="split reveal" style="align-items:center;">
+      <div>
+        <p class="klabel">No pressure. No hard sell.</p>
+        <h2 style="font-weight:400;font-size:clamp(1.6rem,1.3rem+1.4vw,2.3rem);">Just <span class="pink">real conversation.</span></h2>
+        <p style="margin-top:14px;">We're here to learn about your business, answer your questions, and help you decide whether VIA is the right fit for your goals.</p>
+      </div>
+      <div class="cards c2">
+        <div class="icard"><span class="ic-badge"><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="3"/><path d="M3.5 19c0-3 2.5-5.2 5.5-5.2S14.5 16 14.5 19"/><path d="M16 8.6a2.6 2.6 0 0 1 0 4.8"/></svg></span><h3>We listen first</h3><p>We start by understanding your business and what you're trying to achieve.</p></div>
+        <div class="icard"><span class="ic-badge"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/></svg></span><h3>Honest guidance</h3><p>We'll recommend what makes the most sense for you, even if it's not VIA right now.</p></div>
+        <div class="icard"><span class="ic-badge"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.4-9-9a4.6 4.6 0 0 1 9-2 4.6 4.6 0 0 1 9 2c-2 4.6-9 9-9 9z"/></svg></span><h3>Right-fit approach</h3><p>We match you with the right VA for your needs, style, and goals.</p></div>
+        <div class="icard"><span class="ic-badge"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/></svg></span><h3>Ongoing support</h3><p>We don't just match and leave&mdash;we're with you every step of the way.</p></div>
+      </div>
     </div>
   </div>
 </section>
 
-<footer>
+<section class="section" style="padding-top:0;">
   <div class="container">
-    <div class="foot-grid">
-      <div>
-        <div class="foot-word">VIAVA<span class="script">team</span></div>
-        <p style="color:#C3BDCB; font-size:0.86rem; line-height:1.6; max-width:34ch;">Virtual assistance for businesses ready to delegate, grow, and work smarter.</p>
+    <p style="text-align:center;font-family:var(--font-display);font-size:1.6rem;color:var(--ink);margin-bottom:28px;">Common questions</p>
+    <div class="faq reveal">
+      <div class="faq-grid" style="grid-template-columns:1fr 1fr 1fr;">
+        <div>
+          <details open><summary>How quickly can I hire a VA?</summary><p>Most clients are matched within 24 hours of their intake call.</p></details>
+          <details><summary>Can I interview my VA before hiring?</summary><p>Yes&mdash;you'll meet your matched VA before anything starts.</p></details>
+          <details><summary>What happens if my VA isn't the right fit?</summary><p>Every placement includes a free rematch guarantee.</p></details>
+        </div>
+        <div>
+          <details><summary>Do I have to sign a long-term contract?</summary><p>No. VIA VA is month-to-month.</p></details>
+          <details><summary>What hours can my VA work?</summary><p>Hours are built around your needs and time zone.</p></details>
+          <details><summary>What tools and software can VIA VAs use?</summary><p>Whatever you already use&mdash;plus modern AI tools.</p></details>
+        </div>
+        <div>
+          <details><summary>Can I start part-time and upgrade later?</summary><p>Yes. Start small and scale as you grow.</p></details>
+          <details><summary>How does billing work?</summary><p>A flat monthly rate tied to your plan. No setup fees.</p></details>
+          <details><summary>Are VIA VAs trained in AI?</summary><p>Yes&mdash;every VA is trained to use AI tools intentionally.</p></details>
+        </div>
       </div>
-      <div class="foot-col"><h4>Company</h4><ul><li><a href="viava-about.html">About</a></li><li><a href="viava-services-pricing.html#services">Services</a></li><li><a href="index.html#industries">Industries</a></li><li><a href="index.html#how-it-works">How It Works</a></li><li><a href="viava-about.html#join">Careers</a></li><li><a href="viava-contact.html">Contact</a></li></ul></div>
-      <div class="foot-col"><h4>For Clients</h4><ul><li><a href="viava-contact.html">Hire a VA</a></li><li><a href="viava-services-pricing.html#pricing">Pricing</a></li><li><a href="viava-faq.html">FAQ</a></li></ul></div>
-      <div class="foot-col"><h4>For VAs</h4><ul><li><a href="viava-about.html#join">Join VIA VA</a></li><li><a href="viava-about.html#join">VA Opportunities</a></li></ul></div>
+      <p class="faq-foot">Still have questions? Let's talk. <a href="mailto:hello@viavateam.com?subject=Book%20a%20discovery%20call">Book a call &rarr;</a></p>
     </div>
-    <div class="foot-bottom">
-      <span>&copy; 2026 VIA VA. All rights reserved.</span>
-      <span>Privacy Policy &middot; Terms of Service</span>
+  </div>
+</section>
+
+<section class="ctaband ctaband--wide">
+  <span class="spark s1">&#10022;</span><span class="spark s2">&#10022;</span>
+  <div class="container ctaband-inner reveal">
+    <h2>One conversation could take <span class="pink">a lot off your plate.</span></h2>
+    <p>Tell us what you need. We'll take it from there.</p>
+    <a class="btn btn-white" href="#inquiry">Start Your Match <svg class="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a class="brand" href="index.html">
+          <span class="brand-main">VIA&nbsp;<span class="accent">VA</span><sup>&#10022;</sup></span>
+          <span class="brand-sub">TEAM</span>
+        </a>
+        <p class="footer-tag">AI-Trained. Human-Powered. Business-Ready.</p>
+        <div class="socials">
+          <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
+          <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 10v7M7 7.5v.01M11 17v-4a2 2 0 0 1 4 0v4M11 11v6"/></svg></a>
+          <a href="mailto:hello@viavateam.com" aria-label="Email"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 7l8 6 8-6"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h5>Navigation</h5>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="viava-about.html">About Us</a></li>
+          <li><a href="viava-services.html">Our Services</a></li>
+          <li><a href="viava-our-vas.html">Our VAs</a></li>
+          <li><a href="viava-resources.html">Resources</a></li>
+          <li><a href="viava-for-clients.html">For Clients</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For Clients</h5>
+        <ul>
+          <li><a href="viava-how-it-works.html">How It Works</a></li>
+          <li><a href="viava-pricing.html">Pricing</a></li>
+          <li><a href="viava-contact.html">Book a Call</a></li>
+          <li><a href="viava-resources.html">Client Portal</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Resources</h5>
+        <ul>
+          <li><a href="viava-resources.html">Blog</a></li>
+          <li><a href="viava-resources.html">Free Downloads</a></li>
+          <li><a href="viava-resources.html">Tools We Use</a></li>
+          <li><a href="viava-faq.html">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Let's Connect</h5>
+        <a class="footer-email" href="mailto:hello@viavateam.com">hello@viavateam.com</a>
+      </div>
     </div>
+    <div class="footer-bottom">&copy; 2026 VIA VA Team. All rights reserved.</div>
   </div>
 </footer>
 
-</div>
-
 <script>
-(function () {
-  var params = new URLSearchParams(window.location.search);
-  var sent = params.get('sent');
-  if (sent === null) return;
-  var notice = document.getElementById('form-notice');
-  if (!notice) return;
-  if (sent === '1') {
-    notice.textContent = "Thanks — your inquiry is in. Check your inbox for a confirmation, and we'll follow up within 24 hours.";
-    notice.className = 'form-notice success';
-    document.querySelector('.quiz-form').reset();
-  } else {
-    notice.textContent = "Something went wrong sending that — please try again, or email us directly at sales@viavateam.com.";
-    notice.className = 'form-notice error';
-  }
-  notice.style.display = 'block';
-})();
-
-// Show the "Other" text field only when that checkbox is picked, and
-// require it in that case.
-(function () {
-  var toggle = document.getElementById('q1-other-toggle');
-  var otherInput = document.getElementById('q1-other-input');
-  if (!toggle || !otherInput) return;
-  function sync() {
-    var show = toggle.checked;
-    otherInput.style.display = show ? 'block' : 'none';
-    otherInput.required = show;
-    if (!show) otherInput.value = '';
-  }
-  toggle.addEventListener('change', sync);
-  sync();
-})();
-
-// Q1 is multi-select (checkboxes have no native "at least one required"
-// group behavior) — enforce it manually on submit.
-(function () {
-  var form = document.querySelector('.quiz-form');
-  var notice = document.getElementById('form-notice');
-  if (!form) return;
-  form.addEventListener('submit', function (e) {
-    var checked = form.querySelectorAll('input[name="supportType[]"]:checked');
-    if (checked.length === 0) {
-      e.preventDefault();
-      if (notice) {
-        notice.textContent = 'Please choose at least one type of support in question 1.';
-        notice.className = 'form-notice error';
-        notice.style.display = 'block';
-        notice.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+(function(){
+  var els=[].slice.call(document.querySelectorAll('.reveal'));
+  if(window.matchMedia('(prefers-reduced-motion:reduce)').matches){els.forEach(function(e){e.classList.add('in');});}
+  else{
+    function check(){
+      var vh=window.innerHeight||document.documentElement.clientHeight;
+      els=els.filter(function(e){ if(e.getBoundingClientRect().top<vh-40){e.classList.add('in');return false;} return true; });
+      if(!els.length){window.removeEventListener('scroll',check);}
     }
-  });
+    check();
+    window.addEventListener('scroll',check,{passive:true});
+    window.addEventListener('resize',check);
+    setTimeout(function(){els.forEach(function(e){e.classList.add('in');});},3000);
+  }
+
+  // Combine supplementary fields into the handler's `details` field on submit.
+  var form=document.getElementById('viava-form');
+  if(form){
+    form.addEventListener('submit',function(){
+      var g=function(n){var el=form.elements[n];return el?String(el.value||'').trim():'';};
+      var parts=[];
+      if(g('businessName')) parts.push('Business: '+g('businessName'));
+      if(g('companyUrl')) parts.push('Website: '+g('companyUrl'));
+      if(g('industry')) parts.push('Industry: '+g('industry'));
+      if(g('supportType[]')) parts.push('Needs: '+g('supportType[]'));
+      if(g('moreInfo')) parts.push('Notes: '+g('moreInfo'));
+      document.getElementById('f-details').value=parts.join('\n');
+    });
+  }
+
+  // Success / error notice after redirect from the PHP handler.
+  var params=new URLSearchParams(window.location.search);
+  var sent=params.get('sent');
+  if(sent!==null){
+    var n=document.getElementById('form-notice');
+    if(n){
+      if(sent==='1'){ n.textContent="Thanks — your inquiry is in. We'll follow up within 1 business day."; n.style.background='rgba(46,158,110,0.12)'; n.style.color='#1E7A4F'; }
+      else{ n.textContent="Something went wrong sending that — please try again, or email us at hello@viavateam.com."; n.style.background='rgba(198,57,110,0.09)'; n.style.color='var(--rose-deep)'; }
+      n.style.display='block';
+      n.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+  }
 })();
 </script>
 

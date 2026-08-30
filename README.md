@@ -4,12 +4,17 @@ Marketing site for VIA VA — a virtual assistant agency ("Your team, virtually"
 
 ## Pages
 
-- `index.html` — home page (hero, why VIA VA, cost comparison, industries, FAQ teaser)
-- `viava-how-it-works.html` — the matching/onboarding process in detail
-- `viava-services-pricing.html` — full service categories + pricing tiers
-- `viava-about.html` — mission, values, join the team, FAQ
-- `viava-contact.html` — dedicated contact page with the inquiry form
-- `viava-styles.css` — shared stylesheet for all pages
+- `index.html` — home page (hero, evolving support, services, stats, approach, testimonial)
+- `viava-about.html` — the VIA story, pillars, what makes a VIA VA, mission, philosophy, impact
+- `viava-services.html` — service categories, proven process, industries, AI, results, pricing overview
+- `viava-our-vas.html` — the VIA standard, how VAs are built, AI training, why clients choose VIA VAs
+- `viava-resources.html` — categories, featured articles, free downloads, tools we love
+- `viava-for-clients.html` — is VIA for me, how VIA works, what you can delegate, engagement options
+- `viava-how-it-works.html` — the 6-step VIA process, behind the scenes, what we need / what VIA handles
+- `viava-pricing.html` — Part-Time / Full-Time / Specialized plans, comparison table, trust bar
+- `viava-contact.html` — "Let's Talk": discovery-call panel + inquiry form (posts to `contact-handler.php`)
+- `viava-faq.html` — full FAQ across hiring, pricing, VA quality, and working together
+- `viava-redesign.css` — shared stylesheet for all pages (`viava-styles.css` is the retired original)
 
 ## Contact form
 
