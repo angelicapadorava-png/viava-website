@@ -31,6 +31,19 @@ Marketing site for VIA VA — a virtual assistant agency ("Your team, virtually"
 Requires PHP on the host (Hostinger shared hosting serves `.php` files
 automatically — no extra config needed).
 
+## Free-resource downloads (email-gated)
+
+`viava-resources.html` gates the three checklist/kit downloads behind a
+short email form (a native `<dialog>`), which posts to
+`resource-handler.php`. That handler emails the team the lead and emails
+the requester a branded message linking to the file, then redirects back
+with `?dl=1` / `?dl=0`. It shares SMTP logic with the contact form via
+`lib/viava-mailer.php` and renders the delivery email from
+`email-templates/resource-delivery.php`.
+
+Put the PDFs in `assets/downloads/` using the exact filenames listed in
+`assets/downloads/README.md` — the handler whitelists them by name.
+
 ### Email delivery (SMTP setup — do this once, on the server)
 
 By default, `contact-handler.php` falls back to PHP's plain `mail()`,

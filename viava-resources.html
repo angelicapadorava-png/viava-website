@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500;1,9..144,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="viava-redesign.css?v=2">
+<link rel="stylesheet" href="viava-redesign.css?v=3">
 </head>
 <body>
 
@@ -111,29 +111,50 @@
       <p class="klabel">Free downloads</p>
       <h2>Practical tools to help you <span class="pink">work smarter.</span></h2>
     </div>
+    <div id="dl-notice" class="dl-notice" style="display:none;"></div>
     <div class="dlgrid reveal">
       <div class="dlcard">
         <span class="ic-badge"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9l1.6 1.6L14 7M9 14.5h6"/></svg></span>
         <h3>The Ultimate VA Delegation Checklist</h3>
         <p>75+ tasks you can delegate across admin, marketing, operations, customer support, and more.</p>
-        <a class="btn btn-grad" href="viava-contact.html">Download Free <svg class="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <button type="button" class="btn btn-grad dl-open" data-resource="va-delegation-checklist" data-title="The Ultimate VA Delegation Checklist">Download Free <svg class="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       </div>
       <div class="dlcard">
         <span class="ic-badge"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/></svg></span>
         <h3>AI Readiness Checklist for Small Businesses</h3>
         <p>Find out where AI can save your team time, reduce costs, and improve results.</p>
-        <a class="btn btn-grad" href="viava-contact.html">Download Free <svg class="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <button type="button" class="btn btn-grad dl-open" data-resource="ai-readiness-checklist" data-title="AI Readiness Checklist for Small Businesses">Download Free <svg class="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       </div>
       <div class="dlcard">
         <span class="ic-badge"><svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/></svg></span>
         <h3>SOP Starter Kit</h3>
         <p>Templates and guides to help you document processes and build a business that runs without you.</p>
-        <a class="btn btn-grad" href="viava-contact.html">Download Free <svg class="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <button type="button" class="btn btn-grad dl-open" data-resource="sop-starter-kit" data-title="SOP Starter Kit">Download Free <svg class="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       </div>
     </div>
-    <p style="text-align:center;margin-top:18px;font-size:0.8rem;color:var(--ink-mute);">&#128274; No spam. Unsubscribe anytime.</p>
+    <p style="text-align:center;margin-top:18px;font-size:0.8rem;color:var(--ink-mute);">&#128274; No spam. We'll email you the download and the occasional resource. Unsubscribe anytime.</p>
+    <noscript><p style="text-align:center;margin-top:8px;font-size:0.82rem;color:var(--ink-soft);">To get a copy, email <a class="textlink" style="display:inline;" href="mailto:hello@viavateam.com?subject=Free%20resource%20request">hello@viavateam.com</a> and tell us which one.</p></noscript>
   </div>
 </section>
+
+<dialog id="dl-modal" class="dl-modal">
+  <form method="dialog"><button class="dl-x" aria-label="Close" value="cancel">&times;</button></form>
+  <p class="klabel" style="margin-bottom:8px;">Free download</p>
+  <h3 id="dl-modal-title" style="font-weight:400;font-size:1.35rem;margin-bottom:6px;">Get your copy</h3>
+  <p style="font-size:0.85rem;color:var(--ink-soft);margin-bottom:18px;">Tell us where to send it and it'll land in your inbox in a minute.</p>
+  <form action="resource-handler.php" method="POST" novalidate class="dl-form">
+    <div class="hp-field" aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;overflow:hidden;">
+      <label for="dl-website">Website</label><input id="dl-website" name="website" type="text" tabindex="-1" autocomplete="off">
+    </div>
+    <input type="hidden" name="resource" id="dl-resource" value="">
+    <div class="field"><label for="dl-email">Email address <span class="req">*</span></label><input id="dl-email" name="email" type="email" required></div>
+    <label style="display:flex;align-items:flex-start;gap:10px;font-size:0.8rem;color:var(--ink-soft);margin-bottom:16px;cursor:pointer;">
+      <input type="checkbox" name="consent" value="on" required style="width:16px;height:16px;margin-top:2px;accent-color:var(--rose);">
+      <span>Email me this download and the occasional VIA VA resource. <span class="req">*</span></span>
+    </label>
+    <button type="submit" class="btn btn-grad" style="width:100%;justify-content:center;">Send me the download <svg class="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  </form>
+</dialog>
 
 <section class="section" style="padding-top:0;">
   <div class="container">
@@ -240,6 +261,35 @@
   window.addEventListener('scroll',check,{passive:true});
   window.addEventListener('resize',check);
   setTimeout(function(){els.forEach(function(e){e.classList.add('in');});},3000);
+})();
+
+/* Free-download email gate */
+(function(){
+  var modal=document.getElementById('dl-modal');
+  if(!modal) return;
+  var resField=document.getElementById('dl-resource');
+  var titleEl=document.getElementById('dl-modal-title');
+  document.querySelectorAll('.dl-open').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      resField.value=btn.getAttribute('data-resource')||'';
+      titleEl.textContent=btn.getAttribute('data-title')||'Get your copy';
+      if(typeof modal.showModal==='function'){ modal.showModal(); }
+      else { modal.setAttribute('open',''); }
+      var email=document.getElementById('dl-email'); if(email) email.focus();
+    });
+  });
+  modal.addEventListener('click',function(e){ if(e.target===modal) modal.close(); });
+
+  /* success / error banner after redirect from resource-handler.php */
+  var dl=new URLSearchParams(window.location.search).get('dl');
+  if(dl!==null){
+    var n=document.getElementById('dl-notice');
+    if(n){
+      if(dl==='1'){ n.textContent="Check your inbox — your download is on the way (give it a minute)."; n.className='dl-notice ok'; }
+      else{ n.textContent="Something went wrong. Try again, or email hello@viavateam.com and we'll send it over."; n.className='dl-notice err'; }
+      n.style.display='block';
+    }
+  }
 })();
 </script>
 

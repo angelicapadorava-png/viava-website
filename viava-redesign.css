@@ -801,6 +801,26 @@ em{font-style:italic;}
 .ihead h2 .pink{color:var(--rose);}
 .ihead p{font-size:0.98rem;color:var(--ink-soft);}
 
+/* ---- free-download email-gate modal + notice ---------------- */
+.dl-notice{max-width:640px;margin:0 auto 24px;border-radius:var(--r-md);padding:14px 18px;font-size:0.86rem;text-align:center;}
+.dl-notice.ok{background:rgba(46,158,110,0.12);color:#1E7A4F;}
+.dl-notice.err{background:rgba(198,57,110,0.10);color:var(--rose-deep);}
+.dl-modal{
+  width:min(420px,92vw);border:1px solid var(--line);border-radius:var(--r-xl);
+  padding:34px 32px;background:var(--card);color:var(--ink-soft);
+  box-shadow:var(--shadow-float);position:relative;
+}
+.dl-modal::backdrop{background:rgba(31,24,35,0.45);backdrop-filter:blur(2px);}
+.dl-modal[open]{animation:dlpop .18s ease;}
+@keyframes dlpop{from{opacity:0;transform:translateY(8px) scale(0.98);}to{opacity:1;transform:none;}}
+.dl-modal .dl-x{
+  position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;
+  border:0;background:var(--cream-2);color:var(--ink-soft);font-size:1.2rem;line-height:1;cursor:pointer;
+}
+.dl-modal .dl-x:hover{background:var(--line);color:var(--ink);}
+.dl-modal .field{margin-bottom:14px;}
+@media(prefers-reduced-motion:reduce){ .dl-modal[open]{animation:none;} }
+
 /* industries mini icons row */
 .indrow{display:flex;flex-wrap:wrap;gap:22px 30px;}
 .inditem{display:flex;flex-direction:column;align-items:center;gap:8px;width:84px;text-align:center;}
