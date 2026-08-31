@@ -236,6 +236,18 @@
   chips.forEach(function(ch){ch.addEventListener('click',function(){chips.forEach(function(x){x.classList.remove('on');});ch.classList.add('on');expanded=false;apply();});});
   search.addEventListener('input',apply);
   document.getElementById('blog-loadmore-btn').addEventListener('click',function(){expanded=true;apply();});
+
+  /* deep-link: viava-blog.html?cat=<slug> pre-selects a category */
+  var pcat=new URLSearchParams(location.search).get('cat');
+  if(pcat){
+    var target=chips.filter(function(c){return c.getAttribute('data-cat')===pcat;})[0];
+    if(target){
+      chips.forEach(function(x){x.classList.remove('on');});
+      target.classList.add('on');expanded=false;apply();
+      var fb=document.querySelector('.filterbar');
+      if(fb) fb.scrollIntoView({block:'start'});
+    }
+  }
 })();
 </script>
 
