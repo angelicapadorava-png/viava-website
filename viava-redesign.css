@@ -272,6 +272,7 @@ em{font-style:italic;}
   mask:radial-gradient(circle at 30% 30%,transparent 55%,#000 56%);
   z-index:0;pointer-events:none;
 }
+@media(max-width:640px){ .dot-arc{display:none;} }
 
 /* ---- trusted-by strip ----------------------------------------------- */
 .trusted{border-top:1px solid var(--line-warm);border-bottom:1px solid var(--line-warm);padding:40px 0;background:var(--cream);}
@@ -592,6 +593,9 @@ em{font-style:italic;}
 @media(max-width:420px){ .tool-grid{grid-template-columns:repeat(3,1fr);} }
 .tool-rows{display:grid;grid-template-columns:auto 1fr;gap:12px 16px;align-items:center;}
 .tool-rows .rlabel{font-size:0.66rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--on-dark-mute);}
+@media(max-width:560px){ .tool-rows{grid-template-columns:1fr;gap:4px;} .tool-rows .rlabel{margin:10px 0 2px;} }
+.toolband--tri{grid-template-columns:0.9fr 1.5fr 0.7fr;}
+@media(max-width:900px){ .toolband--tri{grid-template-columns:1fr;} }
 .tool-tile{background:#fff;border-radius:13px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;}
 .tool-tile .mono{width:28px;height:28px;border-radius:8px;background:var(--cream-2);display:grid;place-items:center;font-weight:700;font-size:0.8rem;color:var(--rose-deep);}
 .tool-tile span{font-size:0.62rem;font-weight:500;color:var(--ink-soft);text-align:center;line-height:1.2;}
