@@ -1,0 +1,367 @@
+<?php
+/**
+ * Lead capture for the website forms.
+ *
+ * Every accepted submission must reach durable storage before the visitor is
+ * told it worked. In order:
+ *   1. The Agency HQ Worker, which saves to Cloudflare D1 (the primary store).
+ *   2. If that fails, a private JSON-lines file on this server (a temporary
+ *      fallback only), re-sent later by tools/drain-spool.php.
+ *   3. If that fails too, the capture is reported as failed, and the visitor
+ *      must be told so. An email alone doesn't count as durable storage.
+ *
+ * The private folder is outside the web root, because Hostinger's git deploy
+ * clean-syncs the site folder and nothing in there may hold personal data. It
+ * also holds crm-config.php. Without that file the Worker is skipped.
+ *
+ * Rules: fallback files are append-only, and only lead IDs reach error_log().
+ *
+ * Location: VIAVA_PRIVATE_DIR if set (tests only), otherwise a viava-private
+ * folder beside the site folder, e.g. next to public_html.
+ */
+
+require_once __DIR__ . '/viava-worker-client.php';
+
+const VIAVA_SPOOL_SCHEMA = 1;
+const VIAVA_IP_HOURLY_LIMIT = 5;        // Above this, no email goes to the submitted address.
+const VIAVA_IP_HOURLY_DROP = 50;        // Above this, the request is not stored at all.
+const VIAVA_GLOBAL_HOURLY_LIMIT = 30;   // Above this, all outbound form email pauses.
+const VIAVA_DEDUPE_WINDOW = 900;        // Identical resubmissions within 15 minutes.
+
+function viava_private_dir(): ?string {
+    $dir = getenv('VIAVA_PRIVATE_DIR');
+    if ($dir === false || $dir === '') {
+        $dir = dirname(__DIR__, 2) . '/viava-private';
+    }
+    if (!is_dir($dir) && !@mkdir($dir, 0700, true) && !is_dir($dir)) {
+        return null;
+    }
+    return is_writable($dir) ? $dir : null;
+}
+
+function viava_clip(string $value, int $max): string {
+    return function_exists('mb_substr') ? mb_substr($value, 0, $max, 'UTF-8') : substr($value, 0, $max);
+}
+
+/** Per-install random salt, so stored IP hashes can't be reversed by lookup. */
+function viava_salt(string $dir): string {
+    $path = $dir . '/salt';
+    $salt = is_file($path) ? (string) @file_get_contents($path) : '';
+    if ($salt !== '') {
+        return $salt;
+    }
+    $fresh = bin2hex(random_bytes(32));
+    $fh = @fopen($path, 'x');
+    if ($fh !== false) {
+        fwrite($fh, $fresh);
+        fclose($fh);
+        @chmod($path, 0600);
+        return $fresh;
+    }
+    // Another request created it first.
+    $salt = is_file($path) ? (string) @file_get_contents($path) : '';
+    return $salt !== '' ? $salt : $fresh;
+}
+
+/** Appends one record as a single JSON line. Returns true only on a full write. */
+function viava_spool_append(array $record): bool {
+    $dir = viava_private_dir();
+    if ($dir === null) {
+        return false;
+    }
+    $line = json_encode($record, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+    if ($line === false) {
+        return false;
+    }
+    $path = $dir . '/leads-' . gmdate('Y-m') . '.jsonl';
+    $fh = @fopen($path, 'ab');
+    if ($fh === false) {
+        return false;
+    }
+    $ok = false;
+    if (flock($fh, LOCK_EX)) {
+        $written = fwrite($fh, $line . "\n");
+        fflush($fh);
+        flock($fh, LOCK_UN);
+        $ok = ($written === strlen($line) + 1);
+    }
+    fclose($fh);
+    @chmod($path, 0600);
+    return $ok;
+}
+
+/**
+ * Records whether an email went out. Goes to the Worker if that's where the
+ * lead was saved, and to the fallback file otherwise or if the Worker fails.
+ */
+function viava_record_event(array $capture, string $event, bool $ok): void {
+    $id = $capture['id'];
+    if ($id === null) {
+        return;
+    }
+    try {
+        $config = $capture['via'] === 'worker' ? viava_crm_config() : null;
+        if ($config !== null && viava_worker_event($config, $id, $event, $ok)) {
+            return;
+        }
+        viava_spool_append([
+            'record' => 'event',
+            'schema' => VIAVA_SPOOL_SCHEMA,
+            'event_id' => bin2hex(random_bytes(8)),
+            'lead_id' => $id,
+            'event' => $event,
+            'ok' => $ok,
+            'at' => gmdate('c'),
+        ]);
+    } catch (Throwable $e) {
+        error_log('VIA VA lead capture: could not record event for ' . $id);
+    }
+}
+
+/**
+ * Duplicate and rate checks, held in one locked state file. These stop abuse
+ * before any network call; the Worker makes the final duplicate decision.
+ * Fails open: if the state can't be read, nothing is treated as limited.
+ */
+function viava_guard(string $dir, string $ipHash, string $dedupeKey, ?int $now = null): array {
+    $result = ['duplicate' => false, 'ip_limited' => false, 'global_limited' => false, 'dropped' => false];
+    $now = $now ?? time();
+    $fh = @fopen($dir . '/guard-state.json', 'c+');
+    if ($fh === false) {
+        return $result;
+    }
+    if (!flock($fh, LOCK_EX)) {
+        fclose($fh);
+        return $result;
+    }
+
+    $state = json_decode((string) stream_get_contents($fh), true);
+    if (!is_array($state)) {
+        $state = [];
+    }
+    $recent = static fn (array $times): array => array_values(array_filter(
+        $times,
+        static fn ($t) => is_int($t) && $t > $now - 3600
+    ));
+
+    $ips = [];
+    foreach ((array) ($state['ips'] ?? []) as $hash => $times) {
+        $kept = $recent((array) $times);
+        if ($kept !== []) {
+            $ips[$hash] = $kept;
+        }
+    }
+    $global = $recent((array) ($state['global'] ?? []));
+    $dedupe = array_filter(
+        (array) ($state['dedupe'] ?? []),
+        static fn ($t) => is_int($t) && $t > $now - VIAVA_DEDUPE_WINDOW
+    );
+
+    $ipCount = count($ips[$ipHash] ?? []);
+    $result['duplicate'] = isset($dedupe[$dedupeKey]);
+    $result['ip_limited'] = $ipCount >= VIAVA_IP_HOURLY_LIMIT;
+    $result['global_limited'] = count($global) >= VIAVA_GLOBAL_HOURLY_LIMIT;
+    $result['dropped'] = $ipCount >= VIAVA_IP_HOURLY_DROP;
+
+    if (!$result['duplicate']) {
+        $ips[$ipHash][] = $now;
+        $global[] = $now;
+        $dedupe[$dedupeKey] = $now;
+    }
+
+    rewind($fh);
+    ftruncate($fh, 0);
+    fwrite($fh, (string) json_encode(['ips' => $ips, 'global' => $global, 'dedupe' => $dedupe]));
+    fflush($fh);
+    flock($fh, LOCK_UN);
+    fclose($fh);
+    @chmod($dir . '/guard-state.json', 0600);
+    return $result;
+}
+
+/**
+ * Forgets a submission so a retry is handled from scratch. Without this, a
+ * retry after a failure would look like a harmless duplicate of something
+ * that was never actually saved or delivered.
+ */
+function viava_capture_forget(array $capture): void {
+    $key = $capture['dedupe_key'] ?? null;
+    $dir = viava_private_dir();
+    if ($key === null || $dir === null) {
+        return;
+    }
+    $fh = @fopen($dir . '/guard-state.json', 'c+');
+    if ($fh === false) {
+        return;
+    }
+    if (flock($fh, LOCK_EX)) {
+        $state = json_decode((string) stream_get_contents($fh), true);
+        if (is_array($state) && isset($state['dedupe'][$key])) {
+            unset($state['dedupe'][$key]);
+            rewind($fh);
+            ftruncate($fh, 0);
+            fwrite($fh, (string) json_encode($state));
+            fflush($fh);
+        }
+        flock($fh, LOCK_UN);
+    }
+    fclose($fh);
+}
+
+/**
+ * Saves a submission. Never throws: a storage problem must be reported through
+ * the return value, so the handler can tell the visitor the truth.
+ *
+ * $fields is a flat map of submitted values; $flags marks things like a
+ * honeypot hit. 'stored' is true only once the submission is durably saved.
+ */
+function viava_capture_lead(string $form, array $fields, array $flags = []): array {
+    $capture = [
+        'id' => null,
+        'via' => null,        // 'worker' or 'fallback'
+        'stored' => false,
+        'dedupe_key' => null,
+        'duplicate' => false,
+        'ip_limited' => false,
+        'global_limited' => false,
+        'dropped' => false,
+    ];
+
+    try {
+        $dir = viava_private_dir();
+        if ($dir === null) {
+            error_log('VIA VA lead capture: private directory unavailable; submission NOT saved');
+            return $capture;
+        }
+
+        $clipped = [];
+        foreach ($fields as $key => $value) {
+            $limit = in_array($key, ['details', 'moreInfo', 'supportType'], true) ? 10000 : 500;
+            $clipped[$key] = viava_clip(trim((string) $value), $limit);
+        }
+
+        $ipHash = hash_hmac('sha256', (string) ($_SERVER['REMOTE_ADDR'] ?? ''), viava_salt($dir));
+        $dedupeKey = hash('sha256', (string) json_encode(
+            [$form, strtolower($clipped['email'] ?? ''), $clipped],
+            JSON_INVALID_UTF8_SUBSTITUTE
+        ));
+        $guard = viava_guard($dir, $ipHash, $dedupeKey);
+        $capture = array_merge($capture, $guard);
+        $capture['dedupe_key'] = $dedupeKey;
+
+        // A duplicate is already saved; a flood past the hard cap isn't a lead.
+        if ($guard['duplicate'] || $guard['dropped']) {
+            return $capture;
+        }
+
+        $id = 'L' . gmdate('Ymd') . '-' . bin2hex(random_bytes(6));
+        $record = [
+            'record' => 'lead',
+            'schema' => VIAVA_SPOOL_SCHEMA,
+            'id' => $id,
+            'form' => $form,
+            'received_at' => gmdate('c'),
+            'fields' => $clipped,
+            'flags' => array_merge($flags, array_filter([
+                'ip_limited' => $guard['ip_limited'],
+                'global_limited' => $guard['global_limited'],
+            ])),
+            'request' => [
+                'ip_hash' => $ipHash,
+                'user_agent' => viava_clip((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 300),
+                'referer' => viava_clip((string) ($_SERVER['HTTP_REFERER'] ?? ''), 500),
+            ],
+        ];
+
+        $config = viava_crm_config();
+        if ($config !== null && viava_worker_submit($config, $record)) {
+            $capture['via'] = 'worker';
+        } elseif (viava_spool_append($record)) {
+            $capture['via'] = 'fallback';
+            if ($config !== null) {
+                error_log('VIA VA lead capture: Worker unavailable; ' . $id . ' saved to fallback file');
+            }
+        }
+
+        if ($capture['via'] !== null) {
+            $capture['stored'] = true;
+            $capture['id'] = $id;
+        } else {
+            error_log('VIA VA lead capture: Worker and fallback file both failed; submission NOT saved');
+            viava_capture_forget($capture);
+        }
+    } catch (Throwable $e) {
+        error_log('VIA VA lead capture: error of type ' . get_class($e));
+        // A failure after the save mustn't erase the fact that it was saved.
+        if (!$capture['stored']) {
+            viava_capture_forget($capture);
+        }
+    }
+
+    return $capture;
+}
+
+/**
+ * Re-sends fallback records to the Worker. Safe to run repeatedly: submission
+ * keys are unique, so nothing is duplicated, and files are never modified or
+ * deleted here. Progress is recorded by appending 'synced' markers.
+ *
+ * @return array{sent:int,already:int,failed:int,events:int}
+ */
+function viava_spool_drain(array $config, string $dir): array {
+    $counts = ['sent' => 0, 'already' => 0, 'failed' => 0, 'events' => 0];
+    $leads = [];
+    $events = [];
+    $syncedLeads = [];
+    $syncedEvents = [];
+
+    foreach (glob($dir . '/leads-*.jsonl') ?: [] as $file) {
+        foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+            $row = json_decode($line, true);
+            switch ($row['record'] ?? '') {
+                case 'lead':
+                    $leads[$row['id']] = $row;
+                    break;
+                case 'event':
+                    $events[] = $row;
+                    break;
+                case 'synced':
+                    $syncedLeads[$row['lead_id']] = true;
+                    break;
+                case 'event_synced':
+                    $syncedEvents[$row['event_id']] = true;
+                    break;
+            }
+        }
+    }
+
+    foreach ($leads as $id => $record) {
+        if (isset($syncedLeads[$id])) {
+            $counts['already']++;
+            continue;
+        }
+        if (viava_worker_submit($config, $record)) {
+            viava_spool_append(['record' => 'synced', 'lead_id' => $id, 'at' => gmdate('c')]);
+            $syncedLeads[$id] = true;
+            $counts['sent']++;
+        } else {
+            $counts['failed']++;
+            error_log('VIA VA lead capture: drain could not send ' . $id . '; it stays in the fallback file');
+        }
+    }
+
+    // Events can only be delivered once their lead is in the database.
+    foreach ($events as $event) {
+        $eventId = $event['event_id'] ?? '';
+        if ($eventId === '' || isset($syncedEvents[$eventId])) {
+            continue;
+        }
+        $leadPending = isset($leads[$event['lead_id']]) && !isset($syncedLeads[$event['lead_id']]);
+        if (!$leadPending && viava_worker_event($config, $event['lead_id'], $event['event'], (bool) $event['ok'])) {
+            viava_spool_append(['record' => 'event_synced', 'event_id' => $eventId, 'at' => gmdate('c')]);
+            $counts['events']++;
+        }
+    }
+
+    return $counts;
+}

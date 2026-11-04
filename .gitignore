@@ -7,3 +7,9 @@ mail-debug.log
 
 # Local dev-preview helpers (Browser pane launch config)
 .claude/
+
+# Agency HQ local development
+node_modules/
+.wrangler/
+.dev.vars
+worker-configuration.d.ts

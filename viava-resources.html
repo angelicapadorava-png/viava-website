@@ -142,7 +142,7 @@
   <p class="klabel" style="margin-bottom:8px;">Free download</p>
   <h3 id="dl-modal-title" style="font-weight:400;font-size:1.35rem;margin-bottom:6px;">Get your copy</h3>
   <p style="font-size:0.85rem;color:var(--ink-soft);margin-bottom:18px;">Tell us where to send it and it'll land in your inbox in a minute.</p>
-  <form action="resource-handler.php" method="POST" novalidate class="dl-form">
+  <form action="resource-handler.php" method="POST" class="dl-form">
     <div class="hp-field" aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;overflow:hidden;">
       <label for="dl-website">Website</label><input id="dl-website" name="website" type="text" tabindex="-1" autocomplete="off">
     </div>
@@ -286,7 +286,7 @@
     var n=document.getElementById('dl-notice');
     if(n){
       if(dl==='1'){ n.textContent="Check your inbox — your download is on the way (give it a minute)."; n.className='dl-notice ok'; }
-      else{ n.textContent="Something went wrong. Try again, or email hello@viavateam.com and we'll send it over."; n.className='dl-notice err'; }
+      else{ n.textContent="We couldn't send that. Please try again, or email sales@viavateam.com and we'll send it over."; n.className='dl-notice err'; }
       n.style.display='block';
     }
   }

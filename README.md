@@ -31,6 +31,23 @@ Marketing site for VIA VA — a virtual assistant agency ("Your team, virtually"
 Requires PHP on the host (Hostinger shared hosting serves `.php` files
 automatically — no extra config needed).
 
+## Lead capture
+
+Both form handlers save each submission before attempting any email, and only
+report success once it's saved:
+
+1. To the Agency HQ Worker (`agency-hq/`), which stores it in Cloudflare D1.
+2. Otherwise, to a temporary fallback file in a private `viava-private` folder
+   beside the site folder, outside the web root. `tools/drain-spool.php` re-sends
+   those to the Worker later.
+3. Otherwise, the visitor is told it failed.
+
+Local tests, which never reach a real mailbox or Cloudflare:
+
+- `php tests/run.php`: the handlers, with a local fake mail server.
+- `php tests/integration.php`: the handlers through to a local Worker and local D1.
+- `npm test` in `agency-hq/`: the Worker, in the local Workers runtime.
+
 ## Free-resource downloads (email-gated)
 
 `viava-resources.html` gates the three checklist/kit downloads behind a

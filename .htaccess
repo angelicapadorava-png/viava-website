@@ -1,0 +1,6 @@
+# Hostinger's git deploy copies the whole repository into the web root.
+# These rules hide internal files that are useful in the repo but not to visitors.
+# PHP's require is unaffected, so the form handlers can still load lib/ and templates.
+RedirectMatch 404 (?i)^/(readme\.md|\.gitignore|\.htaccess|mail-config\.example\.php)$
+RedirectMatch 404 (?i)^/assets/downloads/readme\.md$
+RedirectMatch 404 (?i)^/(lib|tests|tools|email-templates|agency-hq)(/|$)

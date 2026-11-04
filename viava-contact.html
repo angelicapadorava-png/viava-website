@@ -89,7 +89,7 @@
         <h2>Tell us what you're looking for</h2>
         <p>Fill out a short form and we'll get back to you within 1 business day.</p>
         <div id="form-notice" class="form-notice" style="display:none;border-radius:var(--r-sm);padding:14px 16px;font-size:0.85rem;margin-bottom:16px;"></div>
-        <form action="contact-handler.php" method="POST" novalidate id="viava-form">
+        <form action="contact-handler.php" method="POST" id="viava-form">
           <div class="hp-field" aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;width:0;overflow:hidden;">
             <label for="f-website">Website</label>
             <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off">
@@ -290,7 +290,7 @@
     var n=document.getElementById('form-notice');
     if(n){
       if(sent==='1'){ n.textContent="Thanks — your inquiry is in. We'll follow up within 1 business day."; n.style.background='rgba(46,158,110,0.12)'; n.style.color='#1E7A4F'; }
-      else{ n.textContent="Something went wrong sending that — please try again, or email us at hello@viavateam.com."; n.style.background='rgba(198,57,110,0.09)'; n.style.color='var(--rose-deep)'; }
+      else{ n.textContent="We couldn't save your inquiry. Please try again, or email us directly at sales@viavateam.com."; n.style.background='rgba(198,57,110,0.09)'; n.style.color='var(--rose-deep)'; }
       n.style.display='block';
       n.scrollIntoView({behavior:'smooth',block:'center'});
     }
