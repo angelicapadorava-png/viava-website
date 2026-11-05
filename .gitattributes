@@ -1,0 +1,3 @@
+* text=auto
+# Git hooks run under sh, which needs Unix line endings.
+tools/git-hooks/* text eol=lf

@@ -1,14 +1,16 @@
 <?php
 /**
- * Runs the real form handlers from a prepared release, laid out like the host:
+ * Runs the real form handlers from a checkout of this repository, laid out like the
+ * host, which deploys the whole repository into public_html:
  *
- *   <temp>/public_html/        the release, and nothing else
+ *   <temp>/public_html/        a clean checkout of this repository
  *   <temp>/mail-config.php     mail settings above the web root (fake, local only)
  *   <temp>/viava-private/      saved submissions, created by the handlers
  *
- *   VIAVA_TEST_SITE_ROOT=<release folder> php tests/release-structure.php
+ *   php tests/release-structure.php            (uses a clean clone of HEAD)
+ *   VIAVA_TEST_SITE_ROOT=<folder> php tests/release-structure.php
  *
- * The release is copied into a temp folder first, so this can't touch anything real.
+ * It works on a temp copy, so it can't touch anything real.
  * PHP's built-in server ignores .htaccess, so what's tested here has to be true
  * without it.
  */
@@ -21,8 +23,19 @@ if (PHP_SAPI !== 'cli') {
 require __DIR__ . '/helpers.php';
 
 $release = getenv('VIAVA_TEST_SITE_ROOT');
-if (!$release || !is_file($release . '/index.html')) {
-    fwrite(STDERR, "Set VIAVA_TEST_SITE_ROOT to a built release's public_html folder.\n");
+$cloned = null;
+if (!$release) {
+    // Exactly what Hostinger would deploy: the committed files, not the working folder.
+    $cloned = temp_dir('release-clone');
+    exec('git clone -q ' . escapeshellarg(dirname(__DIR__)) . ' ' . escapeshellarg($cloned . '/site') . ' 2>&1', $ignored, $cloneCode);
+    if ($cloneCode !== 0) {
+        fwrite(STDERR, "Couldn't clone this repository for the test.\n");
+        exit(2);
+    }
+    $release = $cloned . '/site';
+}
+if (!is_file($release . '/index.html')) {
+    fwrite(STDERR, "VIAVA_TEST_SITE_ROOT must be a site folder.\n");
     exit(2);
 }
 
@@ -88,7 +101,10 @@ check('resource form sends mail through the same settings', count(glob($mailDir 
 
 // --- Isolation --------------------------------------------------------------
 
-foreach (['agency-hq/package.json', 'agency-hq/src/index.ts', 'tests/run.php', 'README.md', '.gitignore', 'mail-config.example.php', 'mail-config.php', '_private/01-audit-report.md', 'package.json', 'wrangler.jsonc', 'release/website.mjs', 'assets/source/viava-team-logo-source.png'] as $path) {
+// Not in the repository at all. README.md, .gitignore and the mail example are, and
+// are hidden by .htaccess, which this local server doesn't apply; tests/repo-contents.php
+// checks those rules instead.
+foreach (['agency-hq/package.json', 'agency-hq/src/index.ts', 'tests/run.php', 'mail-config.php', '_private/01-audit-report.md', 'package.json', 'wrangler.jsonc', 'release/website.mjs', 'viava-private/crm-config.php'] as $path) {
     [$status] = request($sitePort, $path);
     check("{$path} isn't served", $status === 404);
 }
@@ -113,4 +129,7 @@ check('the replay job finds its folder from inside the release, and asks for its
 
 remove_dir($home);
 remove_dir($mailDir);
+if ($cloned !== null) {
+    remove_dir($cloned);
+}
 finish();

@@ -1,0 +1,17 @@
+#!/bin/sh
+# Permanent guard for the public website repository. Hostinger deploys this
+# repository's main branch automatically, and the repository is public, so
+# nothing from Agency HQ, which has its own private repository, may be pushed
+# here: not to main, and not to any other branch, now or in older history.
+#
+# Install on each checkout:  git config core.hooksPath tools/git-hooks
+zero=0000000000000000000000000000000000000000
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$local_sha" = "$zero" ] && continue
+  if [ -n "$(git log -1 --format=%H "$local_sha" -- agency-hq package.json wrangler.jsonc node_modules _private release)" ]; then
+    echo "Blocked: $local_ref contains Agency HQ or development files in its history." >&2
+    echo "Agency HQ belongs in its own private repository, never in viava-website." >&2
+    exit 1
+  fi
+done
+exit 0

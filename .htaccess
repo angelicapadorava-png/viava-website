@@ -1,6 +1,7 @@
-# Second layer only. The first is release/website.mjs, which leaves internal files out
-# of the release altogether. These rules cover what must ship but isn't for visitors,
-# and anything left on the server by an earlier deployment.
+# Hostinger deploys this whole repository. These rules hide what has to be on the
+# server but isn't for visitors. Every script in tests/ and tools/ also refuses web
+# requests itself (tests/repo-contents.php checks both layers). Agency HQ isn't in
+# this repository at all; the agency-hq rule is only a safety net.
 # PHP's require is unaffected, so the form handlers can still load lib/ and templates.
 RedirectMatch 404 (?i)^/(readme\.md|\.gitignore|\.htaccess|mail-config\.example\.php)$
 RedirectMatch 404 (?i)^/assets/downloads/readme\.md$

@@ -19,7 +19,12 @@ require __DIR__ . '/helpers.php';
 
 $root = getenv('VIAVA_TEST_SITE_ROOT') ?: dirname(__DIR__);
 refuse_if_real_mail_config($root);
-$hq = dirname(__DIR__) . '/agency-hq';
+// Agency HQ is its own repository. Point VIAVA_HQ_DIR at a local checkout of it.
+$hq = getenv('VIAVA_HQ_DIR') ?: dirname(__DIR__) . '/agency-hq';
+if (!is_file($hq . '/wrangler.jsonc')) {
+    fwrite(STDERR, "Needs a local Agency HQ checkout: set VIAVA_HQ_DIR, or check it out at agency-hq/.\n");
+    exit(2);
+}
 
 putenv('WRANGLER_SEND_METRICS=false');
 $secret = bin2hex(random_bytes(32));
@@ -246,7 +251,7 @@ check('the backlog report reaches Agency HQ', strpos((string) (d1_query("SELECT 
 
 // The one-off host check from the runbook (stage 7), run from a copy beside its config.
 $probe = $replayDir . '/drain-check.php';
-copy(dirname(__DIR__) . '/release/hostinger-connectivity-check.php', $probe);
+copy(dirname(__DIR__) . '/tools/hostinger-connectivity-check.php', $probe);
 exec(escapeshellarg(PHP_BINARY) . ' ' . implode(' ', array_map('escapeshellarg', $phpOptions)) . ' ' . escapeshellarg($probe), $probeOut, $probeExit);
 $probeText = implode(' ', $probeOut);
 check('the host connectivity check reaches the intake, and prints no secret', $probeExit === 0 && strpos($probeText, 'reached and accepted') !== false && strpos($probeText, $secret) === false);
