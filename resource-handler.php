@@ -85,7 +85,8 @@ $capture = viava_capture_lead('resource', [
     'consentText' => 'Email me this download and the occasional VIA VA resource.',
 ]);
 
-// A double click: already saved and sent, so there's nothing further to do.
+// Already saved and sent, so there's nothing further to do. This is only ever
+// remembered after a successful send, so a retry after a failed one still sends.
 if ($capture['duplicate']) {
     header('Location: viava-resources.html?dl=1#downloads');
     exit;
@@ -104,8 +105,9 @@ $teamBody   .= "Email: {$email}\n";
 $teamBody   .= "Agreed to be contacted by email: Yes\n";
 $teamBody   .= 'Lead ID: ' . ($capture['id'] ?? 'NOT SAVED - this email is the only copy') . "\n";
 
+// A retry of something already saved doesn't need to alert the team a second time.
 $teamSent = false;
-if (!$capture['global_limited']) {
+if (!$capture['global_limited'] && !$capture['remote_duplicate']) {
     $teamSent = viava_send_mail(
         $to, 'VIA VA Sales',
         'sales@viavateam.com', 'VIA VA Website',
@@ -114,7 +116,7 @@ if (!$capture['global_limited']) {
     );
     viava_record_event($capture, 'team_notification', $teamSent);
 }
-if (!$teamSent) {
+if (!$teamSent && !$capture['remote_duplicate']) {
     error_log('VIA VA resource form: team notification failed — ' . ($GLOBALS['viava_last_mail_error'] ?? 'unknown'));
 }
 
@@ -142,10 +144,9 @@ if (!$deliverySent && !$deliveryHeld) {
     error_log('VIA VA resource form: delivery email failed — ' . ($GLOBALS['viava_last_mail_error'] ?? 'unknown'));
 }
 
-// Success means both saved and sent. If it wasn't sent, let a retry try again
-// rather than treating it as a duplicate of a send that never happened.
-if (!$deliverySent) {
-    viava_capture_forget($capture);
+// Success means both saved and sent.
+if ($deliverySent) {
+    viava_capture_confirm($capture);
 }
 header('Location: viava-resources.html?dl=' . ($deliverySent ? '1' : '0') . '#downloads');
 exit;

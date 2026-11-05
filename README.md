@@ -46,7 +46,17 @@ Local tests, which never reach a real mailbox or Cloudflare:
 
 - `php tests/run.php`: the handlers, with a local fake mail server.
 - `php tests/integration.php`: the handlers through to a local Worker and local D1.
-- `npm test` in `agency-hq/`: the Worker, in the local Workers runtime.
+- `npm test` and `npm run test:e2e` in `agency-hq/`: the CRM API, and the app in a real browser.
+
+## Agency HQ
+
+The private CRM lives in `agency-hq/`. See `agency-hq/docs/V1-SPEC.md` and
+`agency-hq/docs/RELEASE-CHECKLIST.md`. To run it locally:
+
+    cd agency-hq
+    npm install
+    npm run setup:local
+    npm run dev
 
 ## Free-resource downloads (email-gated)
 

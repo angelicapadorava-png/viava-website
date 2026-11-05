@@ -95,8 +95,13 @@ function viava_worker_post(array $config, string $path, array $payload): array {
     return ['status' => $status, 'body' => is_array($decoded) ? $decoded : null];
 }
 
-/** True only when the Worker confirms the record is saved in D1. */
-function viava_worker_submit(array $config, array $record): bool {
+/**
+ * 'ok' is true only when the Worker confirms the record is saved in D1.
+ * 'duplicate' means D1 already held this content, so no email should be repeated.
+ *
+ * @return array{ok:bool,duplicate:bool}
+ */
+function viava_worker_submit(array $config, array $record): array {
     $result = viava_worker_post($config, '/v1/intake/submissions', [
         'submission_key' => $record['id'],
         'form' => $record['form'],
@@ -105,7 +110,8 @@ function viava_worker_submit(array $config, array $record): bool {
         'flags' => (object) $record['flags'],
         'request' => $record['request'],
     ]);
-    return in_array($result['status'], [200, 201], true) && ($result['body']['ok'] ?? false) === true;
+    $ok = in_array($result['status'], [200, 201], true) && ($result['body']['ok'] ?? false) === true;
+    return ['ok' => $ok, 'duplicate' => $ok && ($result['body']['duplicate'] ?? false) === true];
 }
 
 function viava_worker_event(array $config, string $id, string $event, bool $ok): bool {

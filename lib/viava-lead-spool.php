@@ -82,6 +82,10 @@ function viava_spool_append(array $record): bool {
     if (flock($fh, LOCK_EX)) {
         $written = fwrite($fh, $line . "\n");
         fflush($fh);
+        if (function_exists('fsync')) {
+            // Available from PHP 8.1: pushes the write to disk, not just the OS cache.
+            @fsync($fh);
+        }
         flock($fh, LOCK_UN);
         $ok = ($written === strlen($line) + 1);
     }
@@ -163,10 +167,13 @@ function viava_guard(string $dir, string $ipHash, string $dedupeKey, ?int $now =
     $result['global_limited'] = count($global) >= VIAVA_GLOBAL_HOURLY_LIMIT;
     $result['dropped'] = $ipCount >= VIAVA_IP_HOURLY_DROP;
 
+    // Only counts toward the limits here. A submission is remembered as a duplicate
+    // by viava_capture_confirm(), and only once it has really succeeded. So two
+    // simultaneous requests both carry on, and neither can be told "already saved"
+    // about a save that later fails. The Worker settles which one counts.
     if (!$result['duplicate']) {
         $ips[$ipHash][] = $now;
         $global[] = $now;
-        $dedupe[$dedupeKey] = $now;
     }
 
     rewind($fh);
@@ -180,11 +187,12 @@ function viava_guard(string $dir, string $ipHash, string $dedupeKey, ?int $now =
 }
 
 /**
- * Forgets a submission so a retry is handled from scratch. Without this, a
- * retry after a failure would look like a harmless duplicate of something
- * that was never actually saved or delivered.
+ * Remembers a submission as done, so an identical resubmission within the window
+ * is answered without repeating work. Called only after it has truly succeeded:
+ * saved for an inquiry, saved and sent for a download request. A failure is never
+ * remembered, so a retry always gets a real attempt.
  */
-function viava_capture_forget(array $capture): void {
+function viava_capture_confirm(array $capture): void {
     $key = $capture['dedupe_key'] ?? null;
     $dir = viava_private_dir();
     if ($key === null || $dir === null) {
@@ -196,13 +204,12 @@ function viava_capture_forget(array $capture): void {
     }
     if (flock($fh, LOCK_EX)) {
         $state = json_decode((string) stream_get_contents($fh), true);
-        if (is_array($state) && isset($state['dedupe'][$key])) {
-            unset($state['dedupe'][$key]);
-            rewind($fh);
-            ftruncate($fh, 0);
-            fwrite($fh, (string) json_encode($state));
-            fflush($fh);
-        }
+        $state = is_array($state) ? $state : [];
+        $state['dedupe'][$key] = time();
+        rewind($fh);
+        ftruncate($fh, 0);
+        fwrite($fh, (string) json_encode($state));
+        fflush($fh);
         flock($fh, LOCK_UN);
     }
     fclose($fh);
@@ -221,6 +228,7 @@ function viava_capture_lead(string $form, array $fields, array $flags = []): arr
         'via' => null,        // 'worker' or 'fallback'
         'stored' => false,
         'dedupe_key' => null,
+        'remote_duplicate' => false,  // The Worker says this content is already saved.
         'duplicate' => false,
         'ip_limited' => false,
         'global_limited' => false,
@@ -274,8 +282,10 @@ function viava_capture_lead(string $form, array $fields, array $flags = []): arr
         ];
 
         $config = viava_crm_config();
-        if ($config !== null && viava_worker_submit($config, $record)) {
+        $saved = $config !== null ? viava_worker_submit($config, $record) : ['ok' => false, 'duplicate' => false];
+        if ($saved['ok']) {
             $capture['via'] = 'worker';
+            $capture['remote_duplicate'] = $saved['duplicate'];
         } elseif (viava_spool_append($record)) {
             $capture['via'] = 'fallback';
             if ($config !== null) {
@@ -288,14 +298,9 @@ function viava_capture_lead(string $form, array $fields, array $flags = []): arr
             $capture['id'] = $id;
         } else {
             error_log('VIA VA lead capture: Worker and fallback file both failed; submission NOT saved');
-            viava_capture_forget($capture);
         }
     } catch (Throwable $e) {
         error_log('VIA VA lead capture: error of type ' . get_class($e));
-        // A failure after the save mustn't erase the fact that it was saved.
-        if (!$capture['stored']) {
-            viava_capture_forget($capture);
-        }
     }
 
     return $capture;
@@ -340,7 +345,7 @@ function viava_spool_drain(array $config, string $dir): array {
             $counts['already']++;
             continue;
         }
-        if (viava_worker_submit($config, $record)) {
+        if (viava_worker_submit($config, $record)['ok']) {
             viava_spool_append(['record' => 'synced', 'lead_id' => $id, 'at' => gmdate('c')]);
             $syncedLeads[$id] = true;
             $counts['sent']++;

@@ -155,8 +155,13 @@ $supportTypes = array_map(
 );
 $supportType = implode(', ', $supportTypes);
 
-// The page's script normally combines these into `details`. If it didn't run,
-// build the same summary here so the team email still has them.
+// The page's script always fills `details`, since the business name is required.
+// If it's blank, that script didn't run: most likely a bot posting directly, or
+// occasionally a visitor with scripts off. It's still saved, but held for review
+// rather than entering the pipeline, and no confirmation goes to the typed address.
+$scriptDidNotRun = $details === '';
+
+// Build the same summary here so the team email still has these fields.
 if ($details === '') {
     $parts = [];
     if ($business !== '')   { $parts[] = 'Business: ' . $business; }
@@ -203,10 +208,12 @@ $email = $clean($email);
 
 // --- 0) Save the inquiry before attempting any email -----------------------
 
-$capture = viava_capture_lead('contact', $leadFields);
+$capture = viava_capture_lead('contact', $leadFields, $scriptDidNotRun ? ['no_js' => true] : []);
 
-// Already saved by an identical recent submission, e.g. a double click.
-if ($capture['duplicate']) {
+// Already saved by an identical recent submission, e.g. a double click. This is
+// only ever true for a save that succeeded, so "sent=1" here is honest.
+if ($capture['duplicate'] || $capture['remote_duplicate']) {
+    viava_capture_confirm($capture);
     header('Location: viava-contact.html?sent=1');
     exit;
 }
@@ -229,6 +236,9 @@ $body .= "Hours of support needed: {$hours}\n";
 $body .= "When they need support: {$start}\n";
 $body .= "Agreed to be contacted by email: Yes\n";
 $body .= 'Lead ID: ' . ($capture['id'] ?? 'NOT SAVED - this email is the only copy') . "\n";
+if ($scriptDidNotRun) {
+    $body .= "Review first: the page's script didn't run, which often means an automated submission.\n";
+}
 
 $teamSent = false;
 $teamMailError = 'skipped: global hourly limit';
@@ -265,7 +275,7 @@ $rendered = render_contact_confirmation_email([
 // (server-side only) so delivery problems don't go unnoticed.
 $confirmSent = true;
 $confirmMailError = null;
-if ($capture['stored'] && !$capture['ip_limited'] && !$capture['global_limited']) {
+if ($capture['stored'] && !$scriptDidNotRun && !$capture['ip_limited'] && !$capture['global_limited']) {
     $confirmSent = send_mail($email, $name, 'sales@viavateam.com', 'VIA VA', null, null, $confirmSubject, $rendered['text'], $rendered['html']);
     $confirmMailError = $confirmSent ? null : ($GLOBALS['last_mail_error'] ?? 'unknown');
     viava_record_event($capture, 'confirmation', $confirmSent);
@@ -285,5 +295,8 @@ if (!$teamSent && !$capture['stored']) {
 
 // Success means durably saved. An email alone isn't proof of that, so if saving
 // failed the visitor is told, even if the team email went out.
+if ($capture['stored']) {
+    viava_capture_confirm($capture);
+}
 header('Location: viava-contact.html?sent=' . ($capture['stored'] ? '1' : '0'));
 exit;

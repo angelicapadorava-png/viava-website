@@ -268,6 +268,33 @@
     setTimeout(function(){els.forEach(function(e){e.classList.add('in');});},3000);
   }
 
+  // Keep what the visitor typed if the submission fails, so they don't have to
+  // start over. It stays in this tab only, and is cleared once it's saved.
+  var KEEP_KEY='viava-inquiry-draft';
+  function keepDraft(f){
+    try{
+      var draft={};
+      [].forEach.call(f.elements,function(el){
+        if(!el.name||el.name==='website'||el.name==='consent'||el.name==='details'){return;}
+        if(el.type==='radio'){ if(el.checked){draft[el.name]=el.value;} return; }
+        draft[el.name]=el.value;
+      });
+      sessionStorage.setItem(KEEP_KEY,JSON.stringify(draft));
+    }catch(e){}
+  }
+  function restoreDraft(f){
+    try{
+      var draft=JSON.parse(sessionStorage.getItem(KEEP_KEY)||'null');
+      if(!draft){return;}
+      [].forEach.call(f.elements,function(el){
+        if(!el.name||!Object.prototype.hasOwnProperty.call(draft,el.name)){return;}
+        if(el.type==='radio'){ el.checked=(el.value===draft[el.name]); return; }
+        el.value=draft[el.name];
+      });
+    }catch(e){}
+  }
+  function clearDraft(){ try{sessionStorage.removeItem(KEEP_KEY);}catch(e){} }
+
   // Combine supplementary fields into the handler's `details` field on submit.
   var form=document.getElementById('viava-form');
   if(form){
@@ -280,6 +307,7 @@
       if(g('supportType[]')) parts.push('Needs: '+g('supportType[]'));
       if(g('moreInfo')) parts.push('Notes: '+g('moreInfo'));
       document.getElementById('f-details').value=parts.join('\n');
+      keepDraft(form);
     });
   }
 
@@ -289,8 +317,8 @@
   if(sent!==null){
     var n=document.getElementById('form-notice');
     if(n){
-      if(sent==='1'){ n.textContent="Thanks — your inquiry is in. We'll follow up within 1 business day."; n.style.background='rgba(46,158,110,0.12)'; n.style.color='#1E7A4F'; }
-      else{ n.textContent="We couldn't save your inquiry. Please try again, or email us directly at sales@viavateam.com."; n.style.background='rgba(198,57,110,0.09)'; n.style.color='var(--rose-deep)'; }
+      if(sent==='1'){ clearDraft(); n.textContent="Thanks — your inquiry is in. We'll follow up within 1 business day."; n.style.background='rgba(46,158,110,0.12)'; n.style.color='#1E7A4F'; }
+      else{ if(form){restoreDraft(form);} n.textContent="We couldn't save your inquiry. Your answers are still here. Please try again, or email us directly at sales@viavateam.com."; n.style.background='rgba(198,57,110,0.09)'; n.style.color='var(--rose-deep)'; }
       n.style.display='block';
       n.scrollIntoView({behavior:'smooth',block:'center'});
     }

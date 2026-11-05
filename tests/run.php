@@ -218,6 +218,21 @@ request($port, 'contact-handler.php', $contactPost(['name' => 'http://spam.examp
 $odd = mail_to($mailDir, 'other@example.com');
 check('a link typed as a name does not reach the confirmation', count($odd) === 1 && strpos($odd[0], 'spam.example') === false);
 
+// A direct post where the page's script didn't run: the pattern seen in real bot mail.
+[, $location] = request($port, 'contact-handler.php', $contactPost(['email' => 'nojs@example.com', 'details' => '', 'moreInfo' => '', 'businessName' => 'UNIQUE-BIZ', 'companyUrl' => '', 'industry' => '']));
+check('a submission with no script is saved and reports success', strpos($location, 'sent=1') !== false);
+$saved = array_values(array_filter(of_type(spool_records($dir), 'lead'), static fn ($r) => ($r['fields']['email'] ?? '') === 'nojs@example.com'));
+check('a submission with no script is flagged for review', count($saved) === 1 && !empty($saved[0]['flags']['no_js']));
+check('a submission with no script gets no confirmation email', count(mail_to($mailDir, 'nojs@example.com')) === 0);
+$teamNoJs = array_values(array_filter(mail_to($mailDir, 'sales@viavateam.com'), static fn ($m) => strpos($m, 'nojs@example.com') !== false));
+check('team email warns about it, and still has the business name', count($teamNoJs) === 1 && strpos($teamNoJs[0], 'Review first') !== false && strpos($teamNoJs[0], 'UNIQUE-BIZ') !== false);
+
+// Download requests through a working mail server.
+[, $location] = request($port, 'resource-handler.php', ['email' => 'dl@example.com', 'resource' => 'sop-starter-kit', 'consent' => 'on', 'website' => '']);
+check('saved and delivered download reports success', strpos($location, 'dl=1') !== false && count(mail_to($mailDir, 'dl@example.com')) === 1);
+[, $location] = request($port, 'resource-handler.php', ['email' => 'dl@example.com', 'resource' => 'sop-starter-kit', 'consent' => 'on', 'website' => '']);
+check('a double click on a delivered download sends nothing more', strpos($location, 'dl=1') !== false && count(mail_to($mailDir, 'dl@example.com')) === 1);
+
 stop_process($server);
 stop_process($smtp);
 remove_dir($mailDir);
@@ -250,5 +265,29 @@ check('rejected download request is not saved', !in_array('reader2@example.com',
 
 stop_process($server);
 remove_dir($dir);
+
+// A failed download send, then the mail server recovers: the retry must really send.
+$dir = temp_dir('resource-retry');
+$mailDir = temp_dir('mail3');
+$smtpPort = 18945;
+$port = 18939;
+$server = start_server($root, $dir, $port);
+[, $location] = request($port, 'resource-handler.php', ['email' => 'retry@example.com', 'resource' => 'sop-starter-kit', 'consent' => 'on', 'website' => '']);
+check('download send fails at first, honestly', strpos($location, 'dl=0') !== false);
+stop_process($server);
+$smtp = start_fake_smtp($smtpPort, $mailDir);
+$server = start_server($root, $dir, $port, $smtpPort);
+[, $location] = request($port, 'resource-handler.php', ['email' => 'retry@example.com', 'resource' => 'sop-starter-kit', 'consent' => 'on', 'website' => '']);
+check('the retry really sends the download', strpos($location, 'dl=1') !== false && count(mail_to($mailDir, 'retry@example.com')) === 1);
+stop_process($server);
+stop_process($smtp);
+remove_dir($mailDir);
+remove_dir($dir);
+
+// Keeping the visitor's answers after a failure happens in the browser, so the
+// page itself is checked here, and exercised in the browser end-to-end test.
+$contactPage = file_get_contents($root . '/viava-contact.html');
+check('contact page keeps a draft on submit and restores it on failure', strpos($contactPage, 'keepDraft(form)') !== false && strpos($contactPage, 'restoreDraft(form)') !== false);
+check('contact page never keeps the consent box or honeypot in the draft', strpos($contactPage, "el.name==='website'||el.name==='consent'") !== false);
 
 finish();

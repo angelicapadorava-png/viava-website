@@ -113,34 +113,42 @@ echo 'PHP HTTP client: ' . (getenv('TEST_PHP_CURL') === '1' ? 'curl' : 'streams'
 
 [, $location] = request($phpPort, 'contact-handler.php', contact_post(['email' => 'one@example.com', 'moreInfo' => 'UNIQUE-ONE']));
 check('valid inquiry reports success', strpos($location, 'sent=1') !== false);
-check('inquiry is in D1', d1_count('inquiry_submissions', "payload_json LIKE '%UNIQUE-ONE%'") === 1);
+check('inquiry is in D1', d1_count('inquiries', "payload_json LIKE '%UNIQUE-ONE%'") === 1);
 check('contact and lead are in D1', d1_count('contacts', "email_normalized = 'one@example.com'") === 1
-    && d1_count('leads', "contact_id = (SELECT id FROM contacts WHERE email_normalized = 'one@example.com')") === 1);
+    && d1_count('opportunities', "primary_contact_id = (SELECT id FROM contacts WHERE email_normalized = 'one@example.com')") === 1);
 check('no fallback copy is left on Hostinger when D1 succeeded', count(of_type(spool_records($dir), 'lead')) === 0);
-check('email results reach D1', d1_count('inquiry_submissions', "payload_json LIKE '%UNIQUE-ONE%' AND team_notification_status = 'sent' AND confirmation_status = 'sent'") === 1);
+check('email results reach D1', d1_count('inquiries', "payload_json LIKE '%UNIQUE-ONE%' AND team_notification_status = 'sent' AND confirmation_status = 'sent'") === 1);
 check('team and visitor both got email', count(mail_to($mailDir, 'sales@viavateam.com')) === 1 && count(mail_to($mailDir, 'one@example.com')) === 1);
 
 request($phpPort, 'contact-handler.php', contact_post(['email' => 'one@example.com', 'moreInfo' => 'UNIQUE-ONE']));
-check('a double submit creates one record and no extra email', d1_count('inquiry_submissions', "payload_json LIKE '%UNIQUE-ONE%'") === 1
+check('a double submit creates one record and no extra email', d1_count('inquiries', "payload_json LIKE '%UNIQUE-ONE%'") === 1
     && count(mail_to($mailDir, 'one@example.com')) === 1);
 
 // The local abuse check is cleared so this tests the Worker's own duplicate rule.
 unlink($dir . '/guard-state.json');
 [, $location] = request($phpPort, 'contact-handler.php', contact_post(['email' => 'one@example.com', 'moreInfo' => 'UNIQUE-ONE']));
 check('the Worker catches a duplicate the local check missed', strpos($location, 'sent=1') !== false
-    && d1_count('inquiry_submissions', "payload_json LIKE '%UNIQUE-ONE%'") === 1);
+    && d1_count('inquiries', "payload_json LIKE '%UNIQUE-ONE%'") === 1);
+check('and it sends no second round of email', count(mail_to($mailDir, 'one@example.com')) === 1 && count(mail_to($mailDir, 'sales@viavateam.com')) === 1);
 
 request($phpPort, 'contact-handler.php', contact_post(['email' => 'one@example.com', 'moreInfo' => 'UNIQUE-TWO']));
-check('a new message joins the existing lead', d1_count('inquiry_submissions', "payload_json LIKE '%UNIQUE-TWO%'") === 1
-    && d1_count('leads', "contact_id = (SELECT id FROM contacts WHERE email_normalized = 'one@example.com')") === 1);
+check('a new message joins the existing lead', d1_count('inquiries', "payload_json LIKE '%UNIQUE-TWO%'") === 1
+    && d1_count('opportunities', "primary_contact_id = (SELECT id FROM contacts WHERE email_normalized = 'one@example.com')") === 1);
 
 [, $location] = request($phpPort, 'resource-handler.php', ['email' => 'reader@example.com', 'resource' => 'sop-starter-kit', 'consent' => 'on', 'website' => '']);
 check('download request is saved in D1 and delivered', strpos($location, 'dl=1') !== false
-    && d1_count('inquiry_submissions', "form = 'resource' AND confirmation_status = 'sent'") === 1
+    && d1_count('inquiries', "form = 'resource' AND confirmation_status = 'sent'") === 1
     && count(mail_to($mailDir, 'reader@example.com')) === 1);
+check('a download request opens no sales opportunity', d1_count('opportunities', "primary_contact_id = (SELECT id FROM contacts WHERE email_normalized = 'reader@example.com')") === 0);
+check('a sales inquiry links contact, company and opportunity', d1_count('opportunities', "company_id IS NOT NULL AND primary_contact_id = (SELECT id FROM contacts WHERE email_normalized = 'one@example.com')") === 1
+    && d1_count('company_contacts', "contact_id = (SELECT id FROM contacts WHERE email_normalized = 'one@example.com')") === 1);
+
+request($phpPort, 'contact-handler.php', contact_post(['email' => 'nojs@example.com', 'details' => '', 'moreInfo' => '', 'businessName' => '', 'companyUrl' => '', 'industry' => '']));
+check('a submission with no script is held for review, outside the pipeline', d1_count('inquiries', "spam_status = 'review' AND contact_id = (SELECT id FROM contacts WHERE email_normalized = 'nojs@example.com')") === 1
+    && d1_count('opportunities', "primary_contact_id = (SELECT id FROM contacts WHERE email_normalized = 'nojs@example.com')") === 0);
 
 request($phpPort, 'contact-handler.php', contact_post(['website' => 'http://spam.example', 'moreInfo' => 'UNIQUE-BOT', 'email' => 'bot@example.com']));
-check('honeypot hit is in D1 as spam, with no contact', d1_count('inquiry_submissions', "payload_json LIKE '%UNIQUE-BOT%' AND spam_status = 'suspected'") === 1
+check('honeypot hit is in D1 as spam, with no contact', d1_count('inquiries', "payload_json LIKE '%UNIQUE-BOT%' AND spam_status = 'suspected'") === 1
     && d1_count('contacts', "email_normalized = 'bot@example.com'") === 0);
 
 // --- Worker rejects the credentials -------------------------------------------
@@ -148,7 +156,7 @@ check('honeypot hit is in D1 as spam, with no contact', d1_count('inquiry_submis
 unlink($dir . '/guard-state.json');
 write_config($dir, str_repeat('x', 64));
 [, $location] = request($phpPort, 'contact-handler.php', contact_post(['email' => 'badkey@example.com', 'moreInfo' => 'UNIQUE-BADKEY']));
-check('wrong secret: Worker refuses, D1 has nothing', d1_count('inquiry_submissions', "payload_json LIKE '%UNIQUE-BADKEY%'") === 0);
+check('wrong secret: Worker refuses, D1 has nothing', d1_count('inquiries', "payload_json LIKE '%UNIQUE-BADKEY%'") === 0);
 check('wrong secret: saved to the fallback file, so success is true', strpos($location, 'sent=1') !== false
     && count(of_type(spool_records($dir), 'lead')) === 1);
 write_config($dir, $secret);
@@ -184,14 +192,14 @@ $worker = start_worker();
 [$code, $output] = run_drain($root, $dir, $phpOptions);
 echo "      drain: {$output}\n";
 check('drain succeeds once the Worker is back', $code === 0 && strpos($output, 'sent=2') !== false);
-check('fallback inquiries are now in D1', d1_count('inquiry_submissions', "payload_json LIKE '%UNIQUE-BADKEY%'") === 1
-    && d1_count('inquiry_submissions', "payload_json LIKE '%UNIQUE-OUTAGE%'") === 1);
-check('their email results came too', d1_count('inquiry_submissions', "payload_json LIKE '%UNIQUE-OUTAGE%' AND team_notification_status = 'sent' AND confirmation_status = 'sent'") === 1);
+check('fallback inquiries are now in D1', d1_count('inquiries', "payload_json LIKE '%UNIQUE-BADKEY%'") === 1
+    && d1_count('inquiries', "payload_json LIKE '%UNIQUE-OUTAGE%'") === 1);
+check('their email results came too', d1_count('inquiries', "payload_json LIKE '%UNIQUE-OUTAGE%' AND team_notification_status = 'sent' AND confirmation_status = 'sent'") === 1);
 
 [$code, $output] = run_drain($root, $dir, $phpOptions);
 check('draining again sends nothing and duplicates nothing', $code === 0 && strpos($output, 'sent=0') !== false
-    && d1_count('inquiry_submissions', "payload_json LIKE '%UNIQUE-OUTAGE%'") === 1);
-check('the unsaved inquiry never appears in D1', d1_count('inquiry_submissions', "payload_json LIKE '%UNIQUE-NOWHERE%'") === 0);
+    && d1_count('inquiries', "payload_json LIKE '%UNIQUE-OUTAGE%'") === 1);
+check('the unsaved inquiry never appears in D1', d1_count('inquiries', "payload_json LIKE '%UNIQUE-NOWHERE%'") === 0);
 check('fallback files are not deleted by draining', count(of_type(spool_records($dir), 'lead')) === 2);
 
 stop_process($worker);
