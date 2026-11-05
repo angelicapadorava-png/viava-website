@@ -124,13 +124,28 @@ For data, use D1 Time Travel, or restore an export into a new, empty database wi
 
 **Not done. Every step needs approval.** `main` of `viava-website` stays at `a6d2070` until this is finished, which keeps the way back open.
 
-**Rehearse first, on a throwaway Hostinger site or subdomain,** connected to the release repository. It answers what the docs don't:
-- Does a deploy delete files that have left the repository?
-- What happens to an existing `.git` folder?
-- Do the `.htaccess` rules work on this server?
-- Can PHP create the private folder, and does the replay script run from cron?
+### Rehearsal, which can't touch production
 
-Use no real mail settings there, and no real form submissions.
+It runs as a **separate Hostinger website** on the same plan, using a spare domain with no email and no website today, such as `viavastaffing.team`. That site gets its own folder, `domains/<spare domain>/`, beside `domains/viavateam.com/`. viavateam.com's Git connection, files, `mail-config.php`, DNS and email are never selected or opened.
+
+Approvals needed: creating the rehearsal website, and creating the private release repository. Its first release is today's build.
+
+1. In hPanel, create the website on the spare domain. Don't add email. Confirm the address bar and site selector show the spare domain before every step after this.
+2. In File Manager, add `rehearsal-marker.txt` in the folder above that site's `public_html`, and note its hash. It stands in for `mail-config.php`.
+3. Connect the release repository to **the rehearsal site only**, branch `main`, directory `public_html`, and let it deploy.
+4. Check:
+   - Do the pages load?
+   - Do `README.md`, `agency-hq/`, `tests/` and `release/` return 404?
+   - Do `/lib/viava-mailer.php`, `/tools/drain-spool.php` and `/email-templates/contact-confirmation.php` return 404 through `.htaccess`?
+   - Is there a `.git` folder in `public_html`, and what's in its history?
+5. Put `stray.txt` in that site's `public_html` by hand. Publish a second release that leaves out one image. Check whether the deploy removes the image, `stray.txt`, or neither. This settles how stale files behave.
+6. Add a cron job for the rehearsal site: `php <path>/public_html/tools/drain-spool.php`, sending its output to a file in the folder above. It should report missing settings and exit, which proves cron can run it and that it can create `viava-private/`.
+7. Revert the second release and push. Confirm the image comes back.
+8. Check that `rehearsal-marker.txt` still has the same hash.
+9. **Don't submit the forms there.** Without mail settings they'd fall back to sending real mail to the team.
+10. Afterwards, delete the rehearsal website and its cron job, with approval.
+
+Record each result in `agency-hq/docs/RELEASE-CHECKLIST.md`. Production moves only if every check passes.
 
 **Then, in production:**
 1. Create a manual backup in hPanel, and download a copy.
@@ -144,6 +159,33 @@ Use no real mail settings there, and no real form submissions.
 9. Only then, turn off the push guard and merge the source branch.
 
 **If it goes wrong:** disconnect, reconnect `viava-website` on `main` with `public_html`, and redeploy. That restores `a6d2070`. Restore the hPanel backup for anything else.
+
+## Fallback: uploading with SFTP
+
+Use this if the release repository can't be connected reliably. It writes into `public_html` only, so nothing above it can be touched. Every step needs approval.
+
+1. Build from a commit, and keep the folder. Its `manifest.json` lists every file and its hash, which is the record of what's live.
+
+```bash
+node release/website.mjs build --ref HEAD --out .release/sftp-<commit>
+```
+
+2. Turn off Hostinger's Git auto-deployment for viavateam.com first, so the two methods can't overwrite each other.
+3. Turn on SSH in hPanel. It's off today. Note the address and port it shows, which is usually 65002, and keep the password out of files and history.
+4. Upload the contents of `public_html` from the build folder:
+
+```bash
+sftp -P 65002 <user>@<server ip>
+```
+
+Then, at the `sftp>` prompt, run `cd public_html`, then `put -r .release/sftp-<commit>/public_html/*`.
+
+5. SFTP doesn't remove files. Compare the server's file list against `manifest.json`, and remove anything left over by hand, with approval.
+6. Run the live checks.
+
+**Rollback:** rebuild the previous commit with `--ref`, upload it, and clean up as in step 5.
+
+Weaknesses compared with the release repository: no deploy history on Hostinger, and nothing removes stale files automatically. A failed upload can also leave a mix of old and new files, so upload when the site is quiet.
 
 ## What the local checks can't prove
 

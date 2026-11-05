@@ -61,7 +61,9 @@ function start_worker() {
     global $hq, $state, $secret, $workerPort;
     $null = null_device();
     $proc = proc_open(
-        ['node', 'node_modules/wrangler/bin/wrangler.js', 'dev', '--ip', '127.0.0.1', '--port', (string) $workerPort, '--persist-to', $state, '--var', 'FORM_API_SECRET_K1:' . $secret],
+        getenv('VIAVA_TEST_PAGES_SITE')
+            ? ['node', 'node_modules/wrangler/bin/wrangler.js', 'pages', 'dev', getenv('VIAVA_TEST_PAGES_SITE'), '--ip', '127.0.0.1', '--port', (string) $workerPort, '--persist-to', $state, '--compatibility-date', '2026-11-01', '--d1', 'DB=00000000-0000-0000-0000-000000000000', '--binding', 'FORM_API_SECRET_K1=' . $secret]
+            : ['node', 'node_modules/wrangler/bin/wrangler.js', 'dev', '--ip', '127.0.0.1', '--port', (string) $workerPort, '--persist-to', $state, '--var', 'FORM_API_SECRET_K1:' . $secret],
         [['file', $null, 'r'], ['file', $null, 'w'], ['file', $null, 'w']],
         $pipes,
         $hq
