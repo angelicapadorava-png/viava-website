@@ -202,6 +202,47 @@ check('draining again sends nothing and duplicates nothing', $code === 0 && strp
 check('the unsaved inquiry never appears in D1', d1_count('inquiries', "payload_json LIKE '%UNIQUE-NOWHERE%'") === 0);
 check('fallback files are not deleted by draining', count(of_type(spool_records($dir), 'lead')) === 2);
 
+// --- Scheduled replay: a simulated cron through an outage ---------------------
+
+stop_process($worker);
+$replayDir = temp_dir('integration-replay');
+write_config($replayDir, $secret);
+$record = static function (string $id, string $email) {
+    return json_encode(['record' => 'lead', 'schema' => 1, 'id' => $id, 'form' => 'contact', 'received_at' => gmdate('c'),
+        'fields' => ['name' => 'Replay Person', 'email' => $email, 'supportType' => 'Admin support', 'consent' => 'yes', 'details' => 'UNIQUE-REPLAY ' . $id],
+        'flags' => [], 'request' => ['ip_hash' => 'x', 'user_agent' => 'test', 'referer' => '']]);
+};
+$lines = [];
+for ($i = 1; $i <= 7; $i++) {
+    $lines[] = $record(sprintf('L20260101-replay%04d', $i), "replay{$i}@example.com");
+}
+file_put_contents($replayDir . '/leads-' . gmdate('Y-m') . '.jsonl', implode("\n", $lines) . "\n");
+
+$started = microtime(true);
+[$code, $output] = run_drain($root, $replayDir, $phpOptions);
+$elapsed = microtime(true) - $started;
+echo "      tick 1 (Worker down): {$output}\n";
+check('replay tick with the Worker down: reports waiting, loses nothing', $code === 1 && strpos($output, 'pending=7') !== false);
+check('replay gives up early instead of waiting on every record', strpos($output, 'stopped_early=yes') !== false && strpos($output, 'failed=3') !== false && $elapsed < 30);
+check('replay leaves a status file with no personal data', ($status = (string) file_get_contents($replayDir . '/drain-status.json')) !== '' && strpos($status, 'replay1@') === false && strpos($status, '"pending":7') !== false);
+
+$held = fopen($replayDir . '/drain.lock', 'c');
+flock($held, LOCK_EX);
+[$code, $output] = run_drain($root, $replayDir, $phpOptions);
+check('a replay run that overlaps another does nothing, safely', $code === 0 && strpos($output, 'another run is active') !== false);
+flock($held, LOCK_UN);
+fclose($held);
+
+$worker = start_worker();
+[$code, $output] = run_drain($root, $replayDir, array_merge($phpOptions, ['-d', 'register_argc_argv=1']));
+echo "      tick 2 (Worker back): {$output}\n";
+check('replay tick with the Worker back: everything arrives', $code === 0 && strpos($output, 'sent=7') !== false && strpos($output, 'pending=0') !== false);
+check('all of them are in D1, exactly once', d1_count('inquiries', "payload_json LIKE '%UNIQUE-REPLAY%'") === 7);
+[$code, $output] = run_drain($root, $replayDir, $phpOptions);
+check('the next tick has nothing to do', $code === 0 && strpos($output, 'sent=0') !== false && strpos($output, 'already_synced=7') !== false);
+check('the backlog report reaches Agency HQ', strpos((string) (d1_query("SELECT value FROM app_settings WHERE key = 'fallback_status'")[0]['value'] ?? ''), '"pending":0') !== false);
+remove_dir($replayDir);
+
 stop_process($worker);
 stop_process($php);
 stop_process($smtp);

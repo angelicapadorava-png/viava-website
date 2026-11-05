@@ -27,6 +27,7 @@ const VIAVA_IP_HOURLY_LIMIT = 5;        // Above this, no email goes to the subm
 const VIAVA_IP_HOURLY_DROP = 50;        // Above this, the request is not stored at all.
 const VIAVA_GLOBAL_HOURLY_LIMIT = 30;   // Above this, all outbound form email pauses.
 const VIAVA_DEDUPE_WINDOW = 900;        // Identical resubmissions within 15 minutes.
+const VIAVA_DRAIN_STOP_AFTER = 3;       // Give up a replay run after this many failures in a row.
 
 function viava_private_dir(): ?string {
     $dir = getenv('VIAVA_PRIVATE_DIR');
@@ -307,19 +308,34 @@ function viava_capture_lead(string $form, array $fields, array $flags = []): arr
 }
 
 /**
- * Re-sends fallback records to the Worker. Safe to run repeatedly: submission
- * keys are unique, so nothing is duplicated, and files are never modified or
- * deleted here. Progress is recorded by appending 'synced' markers.
+ * Re-sends fallback records to the Worker. Built to run from cron every few
+ * minutes:
+ *   - Only one run at a time. An overlapping run exits straight away.
+ *   - Stops early when the Worker is plainly down, so a run doesn't sit through a
+ *     timeout per record, and leaves everything for the next run.
+ *   - A limited number per run, so a large backlog can't overrun a cron slot.
+ *   - Safe to repeat: submission keys are unique, so nothing is duplicated.
+ *   - Files are never edited or deleted. Progress is recorded by appending markers.
+ *   - Reports the backlog to Agency HQ, so the dashboard can warn about it.
  *
- * @return array{sent:int,already:int,failed:int,events:int}
+ * @return array{locked:bool,sent:int,already:int,failed:int,events:int,pending:int,oldest_pending_at:?string,stopped_early:bool}
  */
-function viava_spool_drain(array $config, string $dir): array {
-    $counts = ['sent' => 0, 'already' => 0, 'failed' => 0, 'events' => 0];
+function viava_spool_drain(array $config, string $dir, int $limit = 200): array {
+    $counts = ['locked' => false, 'sent' => 0, 'already' => 0, 'failed' => 0, 'events' => 0, 'pending' => 0, 'oldest_pending_at' => null, 'stopped_early' => false];
+
+    $lock = @fopen($dir . '/drain.lock', 'c');
+    if ($lock === false || !flock($lock, LOCK_EX | LOCK_NB)) {
+        $counts['locked'] = true;
+        if ($lock !== false) {
+            fclose($lock);
+        }
+        return $counts;
+    }
+
     $leads = [];
     $events = [];
     $syncedLeads = [];
     $syncedEvents = [];
-
     foreach (glob($dir . '/leads-*.jsonl') ?: [] as $file) {
         foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
             $row = json_decode($line, true);
@@ -340,33 +356,68 @@ function viava_spool_drain(array $config, string $dir): array {
         }
     }
 
+    $attempted = 0;
+    $consecutiveFailures = 0;
     foreach ($leads as $id => $record) {
         if (isset($syncedLeads[$id])) {
             $counts['already']++;
             continue;
         }
+        if ($attempted >= $limit || $consecutiveFailures >= VIAVA_DRAIN_STOP_AFTER) {
+            $counts['stopped_early'] = true;
+            continue;
+        }
+        $attempted++;
         if (viava_worker_submit($config, $record)['ok']) {
             viava_spool_append(['record' => 'synced', 'lead_id' => $id, 'at' => gmdate('c')]);
             $syncedLeads[$id] = true;
             $counts['sent']++;
+            $consecutiveFailures = 0;
         } else {
             $counts['failed']++;
-            error_log('VIA VA lead capture: drain could not send ' . $id . '; it stays in the fallback file');
+            $consecutiveFailures++;
+            error_log('VIA VA lead capture: replay could not send ' . $id . '; it stays in the fallback file');
         }
     }
 
     // Events can only be delivered once their lead is in the database.
-    foreach ($events as $event) {
-        $eventId = $event['event_id'] ?? '';
-        if ($eventId === '' || isset($syncedEvents[$eventId])) {
-            continue;
-        }
-        $leadPending = isset($leads[$event['lead_id']]) && !isset($syncedLeads[$event['lead_id']]);
-        if (!$leadPending && viava_worker_event($config, $event['lead_id'], $event['event'], (bool) $event['ok'])) {
-            viava_spool_append(['record' => 'event_synced', 'event_id' => $eventId, 'at' => gmdate('c')]);
-            $counts['events']++;
+    if ($consecutiveFailures < VIAVA_DRAIN_STOP_AFTER) {
+        foreach ($events as $event) {
+            $eventId = $event['event_id'] ?? '';
+            if ($eventId === '' || isset($syncedEvents[$eventId])) {
+                continue;
+            }
+            $leadPending = isset($leads[$event['lead_id']]) && !isset($syncedLeads[$event['lead_id']]);
+            if (!$leadPending && viava_worker_event($config, $event['lead_id'], $event['event'], (bool) $event['ok'])) {
+                viava_spool_append(['record' => 'event_synced', 'event_id' => $eventId, 'at' => gmdate('c')]);
+                $counts['events']++;
+            }
         }
     }
 
+    foreach ($leads as $id => $record) {
+        if (!isset($syncedLeads[$id])) {
+            $counts['pending']++;
+            $at = $record['received_at'] ?? null;
+            if ($at !== null && ($counts['oldest_pending_at'] === null || strcmp($at, $counts['oldest_pending_at']) < 0)) {
+                $counts['oldest_pending_at'] = $at;
+            }
+        }
+    }
+
+    // Best effort: if the Worker is down, this fails too, and the next run reports.
+    if ($consecutiveFailures < VIAVA_DRAIN_STOP_AFTER) {
+        viava_worker_heartbeat($config, $counts['pending'], $counts['oldest_pending_at']);
+    }
+    @file_put_contents($dir . '/drain-status.json', (string) json_encode([
+        'last_run_at' => gmdate('c'),
+        'pending' => $counts['pending'],
+        'oldest_pending_at' => $counts['oldest_pending_at'],
+        'sent' => $counts['sent'],
+        'failed' => $counts['failed'],
+    ]));
+
+    flock($lock, LOCK_UN);
+    fclose($lock);
     return $counts;
 }

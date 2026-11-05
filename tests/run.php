@@ -284,6 +284,18 @@ stop_process($smtp);
 remove_dir($mailDir);
 remove_dir($dir);
 
+// The replay job refuses to run without its settings, and from the web.
+$dir = temp_dir('drain-config');
+putenv('VIAVA_PRIVATE_DIR=' . $dir);
+exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($root . '/tools/drain-spool.php') . ' 2>&1', $drainOutput, $drainExit);
+check('replay without a Worker configured exits with a clear error', $drainExit === 2 && strpos(implode(' ', $drainOutput), 'unavailable') !== false);
+$port = 18940;
+$server = start_server($root, $dir, $port);
+[$status] = request($port, 'tools/drain-spool.php');
+check('the replay job can\'t be triggered over the web', $status === 404);
+stop_process($server);
+remove_dir($dir);
+
 // Keeping the visitor's answers after a failure happens in the browser, so the
 // page itself is checked here, and exercised in the browser end-to-end test.
 $contactPage = file_get_contents($root . '/viava-contact.html');

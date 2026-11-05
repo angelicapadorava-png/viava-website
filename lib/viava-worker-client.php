@@ -11,6 +11,9 @@
  *       'api_url' => 'https://viava-agency-hq.example.workers.dev',
  *       'key_id'  => 'k1',
  *       'secret'  => '...',
+ *       // Only if Cloudflare Access covers this Worker's address:
+ *       'access_client_id'     => '...',
+ *       'access_client_secret' => '...',
  *   ];
  */
 
@@ -57,6 +60,10 @@ function viava_worker_post(array $config, string $path, array $payload): array {
         'X-Viava-Timestamp: ' . $timestamp,
         'X-Viava-Signature: ' . $signature,
     ];
+    if (!empty($config['access_client_id']) && !empty($config['access_client_secret'])) {
+        $headers[] = 'CF-Access-Client-Id: ' . $config['access_client_id'];
+        $headers[] = 'CF-Access-Client-Secret: ' . $config['access_client_secret'];
+    }
     $url = rtrim((string) $config['api_url'], '/') . $path;
 
     if (function_exists('curl_init')) {
@@ -112,6 +119,12 @@ function viava_worker_submit(array $config, array $record): array {
     ]);
     $ok = in_array($result['status'], [200, 201], true) && ($result['body']['ok'] ?? false) === true;
     return ['ok' => $ok, 'duplicate' => $ok && ($result['body']['duplicate'] ?? false) === true];
+}
+
+/** Tells Agency HQ how many saved submissions are still waiting to reach it. */
+function viava_worker_heartbeat(array $config, int $pending, ?string $oldest): bool {
+    $result = viava_worker_post($config, '/v1/intake/heartbeat', ['pending' => $pending, 'oldest_pending_at' => $oldest]);
+    return $result['status'] === 200 && ($result['body']['ok'] ?? false) === true;
 }
 
 function viava_worker_event(array $config, string $id, string $event, bool $ok): bool {
