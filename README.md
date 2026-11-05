@@ -97,9 +97,9 @@ If either email fails to send, the reason is logged server-side via
 PHP's `error_log()` (visible in Hostinger's error log viewer) — never
 exposed to visitors or in the URL.
 
-Static HTML/CSS + one PHP script (plus the small PHPMailer library), no
-build step. Deploy by uploading these files to the web host's document
-root.
+Static HTML/CSS + PHP form handlers (plus the small PHPMailer library).
+Only an allowlisted subset of this repository is meant to reach the web host.
+See `release/README.md` before pushing or deploying anything.
 
 ### Note on deploy timing
 

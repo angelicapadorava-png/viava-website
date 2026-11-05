@@ -12,7 +12,9 @@
  * 2 not configured.
  */
 
-if (PHP_SAPI !== 'cli') {
+// Never over the web. Hostinger's web PHP runs as CGI/FastCGI, and a cron job's PHP
+// may too, so the test is "is this a web request?", not "is this the CLI build?".
+if (PHP_SAPI !== 'cli' && isset($_SERVER['REQUEST_METHOD'])) {
     http_response_code(404);
     exit;
 }
@@ -27,7 +29,7 @@ if ($dir === null || $config === null) {
 }
 
 $limit = 200;
-foreach ($argv as $arg) {
+foreach ($argv ?? [] as $arg) {
     if (preg_match('/^--limit=(\d+)$/', $arg, $m)) {
         $limit = max(1, (int) $m[1]);
     }

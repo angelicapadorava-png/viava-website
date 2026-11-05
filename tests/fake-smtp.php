@@ -3,7 +3,10 @@
  * A minimal local SMTP sink for tests. Listens on 127.0.0.1 only and writes each
  * message it receives to a folder, so nothing can reach a real recipient.
  *
- *   php tests/fake-smtp.php PORT OUTPUT_DIR
+ *   php tests/fake-smtp.php PORT OUTPUT_DIR [auth]
+ *
+ * With "auth" it offers a login, like a real server, and records what it was given
+ * in OUTPUT_DIR/auth.log, so a test can tell which mail settings were used.
  */
 
 if (PHP_SAPI !== 'cli') {
@@ -11,7 +14,9 @@ if (PHP_SAPI !== 'cli') {
     exit;
 }
 
-[, $port, $dir] = $argv;
+$port = $argv[1];
+$dir = $argv[2];
+$offerAuth = ($argv[3] ?? '') === 'auth';
 $server = stream_socket_server('tcp://127.0.0.1:' . (int) $port, $errno, $errstr);
 if ($server === false) {
     fwrite(STDERR, "Could not listen: {$errstr}\n");
@@ -24,7 +29,13 @@ while ($conn = @stream_socket_accept($server, 3600)) {
     $recipients = [];
     while (($line = fgets($conn)) !== false) {
         $command = strtoupper(substr(trim($line), 0, 4));
-        if ($command === 'RCPT') {
+        if ($offerAuth && $command === 'EHLO') {
+            fwrite($conn, "250-fake-smtp\r\n250 AUTH PLAIN\r\n");
+        } elseif ($offerAuth && $command === 'AUTH') {
+            fwrite($conn, "334 \r\n");
+            file_put_contents($dir . '/auth.log', trim((string) fgets($conn)) . "\n");
+            fwrite($conn, "235 OK\r\n");
+        } elseif ($command === 'RCPT') {
             $recipients[] = trim($line);
             fwrite($conn, "250 OK\r\n");
         } elseif ($command === 'DATA') {

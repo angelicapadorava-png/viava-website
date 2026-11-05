@@ -1,0 +1,18 @@
+#!/bin/sh
+# Stops Agency HQ reaching the repository Hostinger deploys from. Hostinger's docs
+# don't say whether its copy fetches other branches, so this covers every branch,
+# not just main. Lift it only after Hostinger is connected to the release repository:
+#   git config viava.hostingerIsolated true
+if [ "$(git config --bool viava.hostingerIsolated)" = "true" ]; then
+  exit 0
+fi
+zero=0000000000000000000000000000000000000000
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$local_sha" = "$zero" ] && continue
+  if [ -n "$(git log -1 --format=%H "$local_sha" -- agency-hq)" ]; then
+    echo "Blocked: $local_ref contains Agency HQ, and Hostinger still deploys from this repository." >&2
+    echo "See release/README.md before pushing." >&2
+    exit 1
+  fi
+done
+exit 0

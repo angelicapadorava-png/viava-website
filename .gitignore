@@ -8,6 +8,10 @@ mail-debug.log
 # Local dev-preview helpers (Browser pane launch config)
 .claude/
 
+# Built releases, and the production Cloudflare config
+.release/
+agency-hq/wrangler.production.jsonc
+
 # Agency HQ local development
 node_modules/
 .wrangler/

@@ -115,9 +115,9 @@ function start_server(string $root, string $privateDir, int $port, int $smtpPort
     return $proc;
 }
 
-function start_fake_smtp(int $port, string $dir) {
+function start_fake_smtp(int $port, string $dir, bool $requireAuth = false) {
     $null = null_device();
-    $proc = proc_open([PHP_BINARY, __DIR__ . '/fake-smtp.php', (string) $port, $dir], [['file', $null, 'r'], ['file', $null, 'w'], ['file', $null, 'w']], $pipes);
+    $proc = proc_open([PHP_BINARY, __DIR__ . '/fake-smtp.php', (string) $port, $dir, $requireAuth ? 'auth' : ''], [['file', $null, 'r'], ['file', $null, 'w'], ['file', $null, 'w']], $pipes);
     track_process($proc);
     wait_for_port($port);
     return $proc;

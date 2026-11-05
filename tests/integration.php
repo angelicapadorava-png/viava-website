@@ -17,9 +17,9 @@ if (PHP_SAPI !== 'cli') {
 
 require __DIR__ . '/helpers.php';
 
-$root = dirname(__DIR__);
+$root = getenv('VIAVA_TEST_SITE_ROOT') ?: dirname(__DIR__);
 refuse_if_real_mail_config($root);
-$hq = $root . '/agency-hq';
+$hq = dirname(__DIR__) . '/agency-hq';
 
 putenv('WRANGLER_SEND_METRICS=false');
 $secret = bin2hex(random_bytes(32));
