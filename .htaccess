@@ -3,7 +3,7 @@
 # requests itself (tests/repo-contents.php checks both layers). Agency HQ isn't in
 # this repository at all; the agency-hq rule is only a safety net.
 # PHP's require is unaffected, so the form handlers can still load lib/ and templates.
-RedirectMatch 404 (?i)^/(readme\.md|\.gitignore|\.htaccess|mail-config\.example\.php)$
+RedirectMatch 404 (?i)^/(readme\.md|\.gitignore|\.gitattributes|\.htaccess|mail-config\.example\.php)$
 RedirectMatch 404 (?i)^/assets/downloads/readme\.md$
 RedirectMatch 404 (?i)^/(lib|tests|tools|email-templates|agency-hq)(/|$)
 # The deploy keeps .git in the web root. The host already refuses it; don't rely on that alone.

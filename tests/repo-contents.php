@@ -30,7 +30,7 @@ $allowed = [
     '#^(index|blog-[a-z0-9-]+|viava-[a-z0-9-]+)\.html$#',
     '#^viava-[a-z0-9-]+\.css$#',
     '#^(contact|resource)-handler\.php$#',
-    '#^(favicon\.ico|site\.webmanifest|\.htaccess|\.gitignore|README\.md|mail-config\.example\.php)$#',
+    '#^(favicon\.ico|site\.webmanifest|\.htaccess|\.gitignore|\.gitattributes|README\.md|mail-config\.example\.php)$#',
     '#^assets/[a-z0-9/_-]+\.(jpg|jpeg|png|webp|svg|ico|pdf)$#i',
     '#^assets/downloads/README\.md$#',
     '#^email-assets/[a-z0-9_-]+\.(jpg|jpeg|png|gif)$#i',
@@ -91,7 +91,7 @@ check('no tracked file holds a credential' . ($leaks ? ': ' . implode(', ', arra
 // refuses web requests as well. Both layers are checked here.
 $htaccess = (string) file_get_contents($root . '/.htaccess');
 check('.htaccess blocks lib, tests, tools and email-templates', (bool) preg_match('#\^/\(lib\|tests\|tools\|email-templates#', $htaccess));
-check('.htaccess blocks README, .gitignore, .htaccess and the mail example', strpos($htaccess, 'readme\.md|\.gitignore|\.htaccess|mail-config\.example\.php') !== false);
+check('.htaccess blocks README, .gitignore, .gitattributes, .htaccess and the mail example', strpos($htaccess, 'readme\.md|\.gitignore|\.gitattributes|\.htaccess|mail-config\.example\.php') !== false);
 check('.htaccess blocks .git', strpos($htaccess, '^/\.git(/|$)') !== false);
 $unguarded = [];
 foreach ($files as $file) {
