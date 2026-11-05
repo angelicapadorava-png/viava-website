@@ -8,10 +8,10 @@
  *
  * Example crm-config.php (created on the server, never committed):
  *   <?php return [
- *       'api_url' => 'https://viava-agency-hq.example.workers.dev',
+ *       'api_url' => 'https://viava-intake.example.workers.dev', // the intake Worker, never the CRM
  *       'key_id'  => 'k1',
  *       'secret'  => '...',
- *       // Only if Cloudflare Access covers this Worker's address:
+ *       // Not used in V1: the intake Worker isn't behind Access. Only if it ever is:
  *       'access_client_id'     => '...',
  *       'access_client_secret' => '...',
  *   ];

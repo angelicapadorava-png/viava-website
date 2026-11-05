@@ -63,7 +63,7 @@ function start_worker() {
     $proc = proc_open(
         getenv('VIAVA_TEST_PAGES_SITE')
             ? ['node', 'node_modules/wrangler/bin/wrangler.js', 'pages', 'dev', getenv('VIAVA_TEST_PAGES_SITE'), '--ip', '127.0.0.1', '--port', (string) $workerPort, '--persist-to', $state, '--compatibility-date', '2026-11-01', '--d1', 'DB=00000000-0000-0000-0000-000000000000', '--binding', 'FORM_API_SECRET_K1=' . $secret]
-            : ['node', 'node_modules/wrangler/bin/wrangler.js', 'dev', '--ip', '127.0.0.1', '--port', (string) $workerPort, '--persist-to', $state, '--var', 'FORM_API_SECRET_K1:' . $secret],
+            : array_merge(['node', 'node_modules/wrangler/bin/wrangler.js', 'dev'], getenv('VIAVA_TEST_WORKER_CONFIG') ? ['--config', getenv('VIAVA_TEST_WORKER_CONFIG')] : [], ['--ip', '127.0.0.1', '--port', (string) $workerPort, '--persist-to', $state, '--var', 'FORM_API_SECRET_K1:' . $secret]),
         [['file', $null, 'r'], ['file', $null, 'w'], ['file', $null, 'w']],
         $pipes,
         $hq
@@ -243,6 +243,16 @@ check('all of them are in D1, exactly once', d1_count('inquiries', "payload_json
 [$code, $output] = run_drain($root, $replayDir, $phpOptions);
 check('the next tick has nothing to do', $code === 0 && strpos($output, 'sent=0') !== false && strpos($output, 'already_synced=7') !== false);
 check('the backlog report reaches Agency HQ', strpos((string) (d1_query("SELECT value FROM app_settings WHERE key = 'fallback_status'")[0]['value'] ?? ''), '"pending":0') !== false);
+
+// The one-off host check from the runbook (stage 7), run from a copy beside its config.
+$probe = $replayDir . '/drain-check.php';
+copy(dirname(__DIR__) . '/release/hostinger-connectivity-check.php', $probe);
+exec(escapeshellarg(PHP_BINARY) . ' ' . implode(' ', array_map('escapeshellarg', $phpOptions)) . ' ' . escapeshellarg($probe), $probeOut, $probeExit);
+$probeText = implode(' ', $probeOut);
+check('the host connectivity check reaches the intake, and prints no secret', $probeExit === 0 && strpos($probeText, 'reached and accepted') !== false && strpos($probeText, $secret) === false);
+write_config($replayDir, 'not-the-right-secret');
+exec(escapeshellarg(PHP_BINARY) . ' ' . implode(' ', array_map('escapeshellarg', $phpOptions)) . ' ' . escapeshellarg($probe), $probeOut2, $probeExit2);
+check('with a wrong secret it says so plainly', $probeExit2 === 1 && strpos(implode(' ', $probeOut2), 'signature was refused') !== false);
 remove_dir($replayDir);
 
 stop_process($worker);

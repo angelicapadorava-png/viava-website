@@ -4,7 +4,7 @@ Two applications with two separate release paths. **Neither is set up in product
 
 | | Marketing website | Agency HQ |
 |---|---|---|
-| Address | viavateam.com | agency.viavateam.com |
+| Address | viavateam.com | workers.dev behind Access first; agency.viavateam.com later (see agency-hq/docs/DOMAIN-OPTIONS.md) |
 | Runs on | Hostinger | Cloudflare Workers and D1 |
 | Source | This repository, allowlisted files only | `agency-hq/` |
 | Goes live when | A commit is pushed to the release repository | Someone runs `wrangler deploy` |
@@ -102,10 +102,14 @@ npx wrangler d1 export viava-agency-hq --remote --config wrangler.production.jso
 npx wrangler d1 migrations apply viava-agency-hq --remote --config wrangler.production.jsonc
 ```
 
-5. Deploy. **Needs approval.**
+5. Deploy each Worker. **Needs approval.** The CRM and the website intake are separate Workers, released separately.
 
 ```bash
 npx wrangler deploy --config wrangler.production.jsonc
+```
+
+```bash
+npx wrangler deploy --config wrangler.intake.production.jsonc
 ```
 
 `npm run deploy` stays disabled on purpose, so a real deploy can't be started by habit. There's no GitHub Action or Cloudflare build connected to this repository, so nothing deploys on a push.
