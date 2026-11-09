@@ -298,8 +298,11 @@ remove_dir($dir);
 
 // Keeping the visitor's answers after a failure happens in the browser, so the
 // page itself is checked here, and exercised in the browser end-to-end test.
-$contactPage = file_get_contents($root . '/viava-contact.html');
-check('contact page keeps a draft on submit and restores it on failure', strpos($contactPage, 'keepDraft(form)') !== false && strpos($contactPage, 'restoreDraft(form)') !== false);
-check('contact page never keeps the consent box or honeypot in the draft', strpos($contactPage, "el.name==='website'||el.name==='consent'") !== false);
+// v1.0: the contact page's script is bundled into _astro/, so read the scripts it loads.
+$contactPage = (string) file_get_contents($root . '/contact/index.html');
+preg_match_all('#<script[^>]+src="/(_astro/[^"]+\.js)"#', $contactPage, $scriptPaths);
+$contactScript = implode("\n", array_map(static fn ($p) => (string) file_get_contents($root . '/' . $p), $scriptPaths[1]));
+check('contact page keeps a draft on submit and restores it on failure', strpos($contactScript, 'viava-inquiry-draft') !== false && substr_count($contactScript, 'sessionStorage') >= 3);
+check('contact page never keeps the consent box or honeypot in the draft', preg_match('#\[[\'"`]website[\'"`],[\'"`]consent[\'"`]#', $contactScript) === 1);
 
 finish();

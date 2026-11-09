@@ -66,14 +66,28 @@ $server = start_server($root, '', $sitePort, 1);
 
 // --- The site ---------------------------------------------------------------
 
-$pages = glob($root . '/*.html');
+// v1.0: each page is a folder with an index.html (about/index.html is served at /about/).
+$pages = [];
+$walk = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));
+foreach ($walk as $file) {
+    $rel = str_replace('\\', '/', substr($file->getPathname(), strlen($root) + 1));
+    if ($file->getExtension() === 'html' && !preg_match('#^(tests|tools|lib|email-templates|email-assets|\.git)/#', $rel)) {
+        $pages[] = preg_replace('#(^|/)index\.html$#', '$1', $rel);
+    }
+}
 $ok = true;
 foreach ($pages as $page) {
-    [$status] = request($sitePort, basename($page));
+    [$status] = request($sitePort, $page);
     $ok = $ok && $status === 200;
 }
-check('all ' . count($pages) . ' pages load from the release', $ok && count($pages) >= 20);
-foreach (['assets/og-image.png', 'assets/downloads/sop-starter-kit.pdf', 'viava-styles.css', 'favicon.ico', 'site.webmanifest', 'email-assets/hero-workspace.jpg'] as $path) {
+check('all ' . count($pages) . ' pages load from the release', $ok && count($pages) >= 25);
+$css = glob($root . '/_astro/*.css');
+check('the built stylesheet is in the release', $css !== []);
+$assets = ['assets/og-image.png', 'assets/downloads/sop-starter-kit.pdf', 'favicon.ico', 'site.webmanifest', 'email-assets/hero-workspace.jpg'];
+if ($css !== []) {
+    $assets[] = '_astro/' . basename($css[0]);
+}
+foreach ($assets as $path) {
     [$status] = request($sitePort, $path);
     check("{$path} is served", $status === 200);
 }
@@ -108,6 +122,8 @@ foreach (['agency-hq/package.json', 'agency-hq/src/index.ts', 'tests/run.php', '
     [$status] = request($sitePort, $path);
     check("{$path} isn't served", $status === 404);
 }
+// viavateam.com is the client website: VA recruitment lives on the separate Staffing site.
+check('the client website ships no recruitment handler or careers pages', !is_file($root . '/application-handler.php') && !is_dir($root . '/careers'));
 [$status] = request($sitePort, 'tools/drain-spool.php');
 check('the replay job refuses a web request, without any .htaccess help', $status === 404);
 foreach (['lib/viava-mailer.php', 'lib/viava-lead-spool.php', 'lib/viava-worker-client.php', 'lib/PHPMailer/PHPMailer.php', 'email-templates/contact-confirmation.php', 'email-templates/resource-delivery.php'] as $path) {

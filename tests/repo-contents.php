@@ -41,6 +41,12 @@ $allowed = [
     '#^tests/[a-z-]+\.php$#',
     '#^tools/[a-z-]+\.php$#',
     '#^tools/git-hooks/pre-push$#',
+    // Website v1.0 (static build): folder pages, hashed assets and fonts, 404, robots and sitemaps.
+    '#^404\.html$#',
+    '#^(about|academy|book|contact|how-it-works|portal|pricing|privacy|resources|services)/index\.html$#',
+    '#^(resources|services)/[a-z0-9-]+/index\.html$#',
+    '#^_astro/[A-Za-z0-9_.-]+\.(css|js|woff2?)$#',
+    '#^(robots\.txt|sitemap-index\.xml|sitemap-0\.xml)$#',
 ];
 // Never here, whatever the rules above say.
 $forbidden = [
