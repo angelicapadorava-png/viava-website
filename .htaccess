@@ -1,0 +1,47 @@
+# VIA VA Team Website v1.0: proposed .htaccess for the release (NOT YET APPLIED).
+# At release this replaces the repository's root .htaccess. It keeps every existing
+# protection rule and adds the 404 page and permanent redirects from the old page
+# addresses, so links and search results that point at the current site keep working.
+
+# ---- existing protections (unchanged from the current .htaccess) ----
+RedirectMatch 404 (?i)^/(readme\.md|\.gitignore|\.gitattributes|\.htaccess|mail-config\.example\.php)$
+RedirectMatch 404 (?i)^/assets/downloads/readme\.md$
+RedirectMatch 404 (?i)^/(lib|tests|tools|email-templates|agency-hq)(/|$)
+RedirectMatch 404 (?i)^/\.git(/|$)
+# v1.0 build tooling, in case the source folder is ever uploaded by mistake
+RedirectMatch 404 (?i)^/(website-v1|viava-wow-local-demo|staffing-handoff|_private)(/|$)
+
+# ---- pages ----
+DirectoryIndex index.html index.php
+ErrorDocument 404 /404.html
+
+# ---- old page addresses -> v1.0 (301 keeps search rankings; query strings carry over) ----
+# /index.html -> / only when the browser actually asked for /index.html. A plain
+# "RedirectMatch ^/index\.html$" can loop, because the server serves / through index.html.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{THE_REQUEST} ^[A-Z]+\s/index\.html[\s?]
+  RewriteRule ^index\.html$ / [R=301,L]
+</IfModule>
+RedirectMatch 301 ^/viava-about\.html$ /about/
+RedirectMatch 301 ^/viava-our-vas\.html$ /about/
+RedirectMatch 301 ^/viava-services\.html$ /services/
+RedirectMatch 301 ^/viava-pricing\.html$ /pricing/
+RedirectMatch 301 ^/viava-how-it-works\.html$ /how-it-works/
+RedirectMatch 301 ^/viava-for-clients\.html$ /how-it-works/
+RedirectMatch 301 ^/viava-faq\.html$ /how-it-works/
+RedirectMatch 301 ^/viava-contact\.html$ /contact/
+RedirectMatch 301 ^/viava-resources\.html$ /resources/
+RedirectMatch 301 ^/viava-blog\.html$ /resources/
+# all 12 articles: /blog-<slug>.html -> /resources/<slug>/
+RedirectMatch 301 ^/blog-([a-z0-9-]+)\.html$ /resources/$1/
+# The form handlers still redirect to viava-contact.html?sent=… and viava-resources.html?dl=…;
+# the rules above forward those to /contact/?sent=… and /resources/?dl=… with the query intact.
+
+# ---- VA recruitment (separate site: viavastaffing.team) ----
+# viavateam.com is the client website. It has never published a careers or application page:
+# the current live site has none, its pages link to none, and search results (checked
+# 10 Nov 2026) show no recruitment URL for viavateam.com. So nothing needs redirecting now,
+# and /careers/ correctly returns the 404 page. When the Staffing site's pages are live, a
+# convenience forward can be added here, for example:
+#   RedirectMatch 302 ^/(careers|jobs|apply)(/.*)?$ https://viavastaffing.team/

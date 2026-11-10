@@ -14,8 +14,8 @@ function render_contact_confirmation_email(array $data): array {
     $esc = static fn (string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
 
     $firstName   = $esc($data['firstName']);
-    $supportType = $esc($data['supportType'] !== '' ? $data['supportType'] : '—');
-    $details     = $esc($data['details'] !== '' ? $data['details'] : '—');
+    $supportType = $esc($data['supportType']);
+    $details     = $esc($data['details']);
     $hours       = $esc($data['hours'] !== '' ? $data['hours'] : '—');
     $start       = $esc($data['start'] !== '' ? $data['start'] : '—');
 
@@ -28,6 +28,11 @@ function render_contact_confirmation_email(array $data): array {
     $pink    = '#FF4F8B';
     $coral   = '#FF7A5A';
     $peach   = '#FFB26E';
+
+    // Rows that only appear when given a value. The contact handler leaves
+    // these blank so free text from a public form is never echoed by email.
+    $supportRow = $supportType === '' ? '' : "<tr><td style=\"padding:5px 0; color:{$inkSoft};\">Type of support</td><td style=\"padding:5px 0; text-align:right; font-weight:bold;\">{$supportType}</td></tr>";
+    $detailsBlock = $details === '' ? '' : "<p style=\"margin:12px 0 0 0; padding-top:12px; border-top:1px solid rgba(20,16,28,0.08); font-size:13px; color:{$inkSoft};\"><strong style=\"color:{$ink};\">What you need help with:</strong> {$details}</p>";
 
     // Optional hero photo — drop a file in /email-assets/hero-workspace.*
     // (jpg/jpeg/png/webp) and it's picked up automatically; otherwise the
@@ -115,13 +120,11 @@ HTML;
                 <td style="padding:22px 24px;">
                   <p style="margin:0 0 12px 0; font-size:11px; font-weight:bold; letter-spacing:0.12em; text-transform:uppercase; color:{$berry};">&#10022;&nbsp; What you told us</p>
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px; color:{$ink};">
-                    <tr><td style="padding:5px 0; color:{$inkSoft};">Type of support</td><td style="padding:5px 0; text-align:right; font-weight:bold;">{$supportType}</td></tr>
+{$supportRow}
                     <tr><td style="padding:5px 0; color:{$inkSoft};">Hours of support needed</td><td style="padding:5px 0; text-align:right; font-weight:bold;">{$hours}</td></tr>
                     <tr><td style="padding:5px 0; color:{$inkSoft};">When support is needed</td><td style="padding:5px 0; text-align:right; font-weight:bold;">{$start}</td></tr>
                   </table>
-                  <p style="margin:12px 0 0 0; padding-top:12px; border-top:1px solid rgba(20,16,28,0.08); font-size:13px; color:{$inkSoft};">
-                    <strong style="color:{$ink};">What you need help with:</strong> {$details}
-                  </p>
+{$detailsBlock}
                 </td>
               </tr>
             </table>
@@ -275,10 +278,15 @@ HTML;
     $text .= "Thanks for reaching out to VIA VA. We've received your inquiry.\n";
     $text .= "Our team will be in touch within 24 hours to learn more about what you need and how we can help.\n\n";
     $text .= "WHAT YOU TOLD US\n";
-    $text .= "Type of support: {$data['supportType']}\n";
+    if ($data['supportType'] !== '') {
+        $text .= "Type of support: {$data['supportType']}\n";
+    }
     $text .= "Hours of support needed: {$data['hours']}\n";
     $text .= "When support is needed: {$data['start']}\n";
-    $text .= "What you need help with: {$data['details']}\n\n";
+    if ($data['details'] !== '') {
+        $text .= "What you need help with: {$data['details']}\n";
+    }
+    $text .= "\n";
     $text .= "WHAT HAPPENS NEXT\n";
     $text .= "01 - We talk through your needs. We'll learn more about your business, the work you need help with, and what you'd like to take off your plate.\n";
     $text .= "02 - We find the right fit. We'll help you identify the kind of VA support that makes sense for your workflow, hours, and goals.\n";

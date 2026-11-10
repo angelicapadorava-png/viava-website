@@ -1,4 +1,4 @@
-# Real SMTP credentials — created directly on the server, never committed.
+# Real SMTP credentials: created directly on the server, never committed.
 # Copy mail-config.example.php to mail-config.php and fill in the password.
 mail-config.php
 
@@ -7,3 +7,7 @@ mail-debug.log
 
 # Local dev-preview helpers (Browser pane launch config)
 .claude/
+
+# Agency HQ is a separate private repository. Locally it may be checked out in
+# this folder, but it must never be committed here.
+/agency-hq/

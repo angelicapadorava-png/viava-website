@@ -31,6 +31,38 @@ Marketing site for VIA VA — a virtual assistant agency ("Your team, virtually"
 Requires PHP on the host (Hostinger shared hosting serves `.php` files
 automatically — no extra config needed).
 
+## Lead capture
+
+Both form handlers save each submission before attempting any email, and only
+report success once it's saved:
+
+1. To Agency HQ's intake Worker, which stores it in Cloudflare D1. Agency HQ is a
+   separate private repository; this site only holds the code that sends to it
+   (`lib/viava-worker-client.php`), configured on the server by
+   `viava-private/crm-config.php`.
+2. Otherwise, to a temporary fallback file in a private `viava-private` folder
+   beside the site folder, outside the web root. `tools/drain-spool.php` re-sends
+   those to the Worker later.
+3. Otherwise, the visitor is told it failed.
+
+Local tests, which never reach a real mailbox or Cloudflare:
+
+- `php tests/repo-contents.php`: nothing tracked here is unfit for a public web host.
+- `php tests/run.php`: the handlers, with a local fake mail server.
+- `php tests/integration.php`: the handlers through to a local intake Worker and
+  local D1. It needs a local checkout of the Agency HQ repository, at `agency-hq/`
+  inside this folder (ignored by Git) or wherever `VIAVA_HQ_DIR` points.
+
+## Two repositories
+
+- **This one** (`viava-website`, public): the website and its form-intake code.
+  Hostinger deploys `main` automatically, so everything tracked here goes live.
+- **Agency HQ** (`viava-agency-hq`, private): the CRM, its Workers, database
+  migrations, tests and deployment tooling. Deployed to Cloudflare separately.
+
+`tools/git-hooks/pre-push` refuses any push carrying Agency HQ or development files.
+Turn it on in each checkout with `git config core.hooksPath tools/git-hooks`.
+
 ## Free-resource downloads (email-gated)
 
 `viava-resources.html` gates the three checklist/kit downloads behind a
@@ -70,9 +102,8 @@ If either email fails to send, the reason is logged server-side via
 PHP's `error_log()` (visible in Hostinger's error log viewer) — never
 exposed to visitors or in the URL.
 
-Static HTML/CSS + one PHP script (plus the small PHPMailer library), no
-build step. Deploy by uploading these files to the web host's document
-root.
+Static HTML/CSS + PHP form handlers (plus the small PHPMailer library), deployed
+by Hostinger's Git integration from `main`. Run the tests above before merging.
 
 ### Note on deploy timing
 
